@@ -11,6 +11,7 @@ pip install -r requirements.txt
 Create a `.env` file:
 ```
 OPENAI_API_KEY=your_key_here
+FINANCIAL_DATASETS_API_KEY=your_key_here  # Get free key at https://www.financialdatasets.ai/
 ```
 
 Run the basic agent:
@@ -23,7 +24,28 @@ Run the Yahoo Finance agent:
 python agent_yahoo_finance.py
 ```
 
-## Yahoo Finance Integration
+## Financial Data Integration
+
+### Financial Datasets MCP (Recommended - Works on All macOS Versions)
+
+**No Docker required!** Uses minimal dependencies (httpx only).
+
+```bash
+# Get your free API key at https://www.financialdatasets.ai/
+# Add it to .env as FINANCIAL_DATASETS_API_KEY
+
+python agent_financial_datasets.py
+```
+
+**Available data:**
+- Stock prices (current & historical)
+- Financial statements (income, balance sheet, cash flow)
+- Company news
+- Crypto data
+
+---
+
+## Yahoo Finance Integration (Requires Docker or Linux)
 
 The Yahoo Finance agent uses MCP (Model Context Protocol) via stdio for lightweight server connection. It provides tools for: ticker info, news, search, top entities, and price history.
 
