@@ -5,7 +5,9 @@
   "description": "CopilotKit runtime that connects to Yahoo Finance MCP server",
   "main": "copilot-runtime.js",
   "scripts": {
-    "runtime": "node copilot-runtime.js"
+    "runtime": "node copilot-runtime.js",
+    "frontend": "cd frontend && npm run dev",
+    "dev": "concurrently --names \"RUNTIME,FRONTEND\" --prefix-colors \"blue,green\" \"npm run runtime\" \"npm run frontend\""
   },
   "dependencies": {
     "@copilotkit/runtime": "^1.3.0",
@@ -13,5 +15,8 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

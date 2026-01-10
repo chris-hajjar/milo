@@ -42,19 +42,24 @@ python agent.py
 
 **React Web Interface (Recommended):**
 ```bash
-# Terminal 1 - Python MCP Server (runs server.py with tools)
-# No need to run anything - it's started automatically by the runtime
-
-# Terminal 2 - CopilotKit Runtime (connects to MCP server)
-npm run runtime
-
-# Terminal 3 - React Frontend
-cd frontend
-npm install  # First time only
+# One command to start everything!
 npm run dev
 ```
 
+This starts both:
+- CopilotKit Runtime on port 8001 (automatically starts Python MCP server)
+- React Frontend on port 3000
+
 Then open your browser to `http://localhost:3000` for the modern React interface with CopilotKit.
+
+**Or run components separately:**
+```bash
+# Terminal 1 - CopilotKit Runtime
+npm run runtime
+
+# Terminal 2 - React Frontend
+npm run frontend
+```
 
 **Architecture:**
 ```
