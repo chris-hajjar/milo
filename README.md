@@ -45,7 +45,39 @@ python agent_financial_datasets.py
 
 ---
 
-## Yahoo Finance Integration (Requires Docker or Linux)
+## Yahoo Finance Integration
+
+### Option A: SSH Tunnel to Remote Linux (Simplest for Old macOS)
+
+If you have access to **any Linux machine** (VPS, work server, friend's computer):
+
+**Setup on Remote Linux:**
+```bash
+uv pip install --system yfmcp  # One-time install
+```
+
+**Use from Your Mac:**
+
+Edit `agent_yahoo_finance.py` and change the server setup to:
+```python
+yahoo_finance_server = MCPServerStdio(
+    'ssh',
+    args=['-t', 'user@your-linux-server', 'yfmcp'],
+    timeout=30
+)
+```
+
+Then just run: `python agent_yahoo_finance.py`
+
+The SSH command forwards the MCP stdio connection through SSH - no HTTP server needed!
+
+**Free Linux Options:**
+- GitHub Codespaces (60 hrs/month free)
+- Google Cloud Shell (free)
+- Oracle Cloud (always free tier)
+- Any VPS/EC2 instance
+
+### Option B: Docker or Linux
 
 The Yahoo Finance agent uses MCP (Model Context Protocol) via stdio for lightweight server connection. It provides tools for: ticker info, news, search, top entities, and price history.
 
