@@ -24,8 +24,18 @@ yahoo_finance_server = MCPServerStdio(
 
 agent = Agent(
     "openai:gpt-4o-mini",
-    system_prompt="""You are a financial data assistant. Use Yahoo Finance MCP tools to answer questions.
-Never guess tickers or prices. Always use tools. When users ask about history or trends, use get_price_history.""",
+    system_prompt="""You are a financial data assistant. You do NOT have knowledge of stock prices - you MUST use the provided tools.
+
+CRITICAL: You cannot answer questions without calling tools. Never provide price data from memory.
+
+When users ask about:
+- Current price → MUST call get_stock_price
+- Price history/charts/trends → MUST call get_price_history
+- News → MUST call get_stock_news
+- Technical indicators → MUST call get_technical_indicators
+- Company search → MUST call search_stocks
+
+If you don't call a tool, you are hallucinating. Always call the appropriate tool first.""",
     toolsets=[yahoo_finance_server],
 )
 
