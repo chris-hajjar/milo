@@ -18,9 +18,7 @@ Run the basic agent:
 python agent.py
 ```
 
-## Financial Data Options
-
-### Option 1: Yahoo Finance (Recommended - No API Key Required)
+## Yahoo Finance Agent
 
 **100% local, works on any macOS version!**
 
@@ -37,22 +35,3 @@ Uses a lightweight local MCP server that fetches data directly from Yahoo Financ
 - Stock search
 
 **No API key, no Docker, no external dependencies.**
-
----
-
-### Option 2: Financial Datasets (Requires Free API Key)
-
-More comprehensive data including financial statements.
-
-```bash
-# Get your free API key at https://www.financialdatasets.ai/
-# Add to .env: FINANCIAL_DATASETS_API_KEY=your_key_here
-
-python agent_financial_datasets.py
-```
-
-**Available:**
-- Stock prices (current & historical)
-- Financial statements (income, balance sheet, cash flow)
-- Company news
-- Crypto data
