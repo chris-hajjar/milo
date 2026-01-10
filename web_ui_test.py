@@ -11,12 +11,6 @@ from starlette.applications import Starlette
 from starlette.routing import Route
 from starlette.responses import HTMLResponse, StreamingResponse
 
-# Debug logging to file
-def log_debug(msg):
-    with open('debug.txt', 'a') as f:
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        f.write(f"[{timestamp}] {msg}\n")
-
 load_dotenv()
 HERE = Path(__file__).resolve().parent
 
@@ -126,15 +120,15 @@ async def chat(request):
         # Send chart if found
         for m in result.all_messages():
             if m.kind == 'tool-return' and m.tool_name == 'get_price_history':
-                log_debug(f"Found price history tool return")
-                log_debug(f"Content type: {type(m.content)}")
-                log_debug(f"Content keys: {m.content.keys() if isinstance(m.content, dict) else 'not a dict'}")
+                print(f"DEBUG: Found price history tool return")
+                print(f"DEBUG: Content type: {type(m.content)}")
+                print(f"DEBUG: Content keys: {m.content.keys() if isinstance(m.content, dict) else 'not a dict'}")
                 chart = make_chart(m.content)
                 if chart:
-                    log_debug(f"Chart created successfully")
+                    print(f"DEBUG: Chart created successfully")
                     yield f"data: {json.dumps({'type': 'chart', 'chart': chart})}\n\n"
                 else:
-                    log_debug(f"Chart was None")
+                    print(f"DEBUG: Chart was None")
 
     return StreamingResponse(stream(), media_type='text/event-stream')
 
