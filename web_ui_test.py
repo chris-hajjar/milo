@@ -39,6 +39,12 @@ If you don't call a tool, you are hallucinating. Always call the appropriate too
     toolsets=[yahoo_finance_server],
 )
 
+# Debug: Check if tools are loaded
+print(f"\n=== AGENT STARTUP DEBUG ===")
+print(f"Agent model: {agent.model}")
+print(f"Number of toolsets: {len(agent._function_tools) if hasattr(agent, '_function_tools') else 'unknown'}")
+print(f"=========================\n")
+
 # Universal chart creator (~10 lines)
 def make_chart(data):
     if 'prices' not in data or not data['prices']:
@@ -122,30 +128,32 @@ async def chat(request):
     data = await request.json()
 
     async def stream():
-        result = await agent.run(data['msg'])
+        # CRITICAL: Use context manager to initialize MCP connection
+        async with agent:
+            result = await agent.run(data['msg'])
 
-        # Send text
-        yield f"data: {json.dumps({'type': 'text', 'text': str(result.output)})}\n\n"
+            # Send text
+            yield f"data: {json.dumps({'type': 'text', 'text': str(result.output)})}\n\n"
 
-        # Debug: log all messages
-        print(f"\nDEBUG: Total messages: {len(list(result.all_messages()))}")
-        for i, m in enumerate(result.all_messages()):
-            print(f"DEBUG: Message {i}: kind={m.kind}, has tool_name={hasattr(m, 'tool_name')}")
-            if hasattr(m, 'tool_name'):
-                print(f"DEBUG:   tool_name={m.tool_name}")
+            # Debug: log all messages
+            print(f"\nDEBUG: Total messages: {len(list(result.all_messages()))}")
+            for i, m in enumerate(result.all_messages()):
+                print(f"DEBUG: Message {i}: kind={m.kind}, has tool_name={hasattr(m, 'tool_name')}")
+                if hasattr(m, 'tool_name'):
+                    print(f"DEBUG:   tool_name={m.tool_name}")
 
-        # Send chart if found
-        for m in result.all_messages():
-            if m.kind == 'tool-return' and m.tool_name == 'get_price_history':
-                print(f"DEBUG: Found price history tool return")
-                print(f"DEBUG: Content type: {type(m.content)}")
-                print(f"DEBUG: Content keys: {m.content.keys() if isinstance(m.content, dict) else 'not a dict'}")
-                chart = make_chart(m.content)
-                if chart:
-                    print(f"DEBUG: Chart created successfully")
-                    yield f"data: {json.dumps({'type': 'chart', 'chart': chart})}\n\n"
-                else:
-                    print(f"DEBUG: Chart was None")
+            # Send chart if found
+            for m in result.all_messages():
+                if m.kind == 'tool-return' and m.tool_name == 'get_price_history':
+                    print(f"DEBUG: Found price history tool return")
+                    print(f"DEBUG: Content type: {type(m.content)}")
+                    print(f"DEBUG: Content keys: {m.content.keys() if isinstance(m.content, dict) else 'not a dict'}")
+                    chart = make_chart(m.content)
+                    if chart:
+                        print(f"DEBUG: Chart created successfully")
+                        yield f"data: {json.dumps({'type': 'chart', 'chart': chart})}\n\n"
+                    else:
+                        print(f"DEBUG: Chart was None")
 
     return StreamingResponse(stream(), media_type='text/event-stream')
 
