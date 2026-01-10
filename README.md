@@ -25,9 +25,16 @@ python agent_yahoo_finance.py
 
 ## Yahoo Finance Integration
 
-The Yahoo Finance agent uses MCP (Model Context Protocol) via stdio for lightweight server connection. It provides 7 tools: ticker info, news, search, top entities, price history, options, and earnings.
+The Yahoo Finance agent uses MCP (Model Context Protocol) via stdio for lightweight server connection. It provides tools for: ticker info, news, search, top entities, and price history.
+
+**Requirements:** Docker (to avoid curl-cffi build issues on macOS)
 
 Test the MCP connection:
 ```bash
 python test_yahoo_mcp.py
+```
+
+**Alternative without Docker:** If you have a Linux system or want to try building dependencies locally, you can modify `agent_yahoo_finance.py` to use:
+```python
+yahoo_finance_server = MCPServerStdio('uvx', args=['yfmcp@latest'], timeout=30)
 ```

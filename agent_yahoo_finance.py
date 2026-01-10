@@ -11,9 +11,10 @@ load_dotenv()
 
 async def main():
     # Create MCP server connection to Yahoo Finance (stdio transport)
+    # Using Docker to avoid curl-cffi build issues on macOS
     yahoo_finance_server = MCPServerStdio(
-        'uvx',
-        args=['yahoo-finance-server'],
+        'docker',
+        args=['run', '-i', '--rm', 'narumi/yfinance-mcp'],
         timeout=30
     )
 

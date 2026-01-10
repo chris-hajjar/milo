@@ -10,9 +10,10 @@ async def test_yahoo_finance_mcp():
     print("Testing Yahoo Finance MCP server connection...\n")
 
     # Create MCP server connection
+    # Using Docker to avoid curl-cffi build issues on macOS
     yahoo_finance_server = MCPServerStdio(
-        'uvx',
-        args=['yahoo-finance-server'],
+        'docker',
+        args=['run', '-i', '--rm', 'narumi/yfinance-mcp'],
         timeout=30
     )
 
