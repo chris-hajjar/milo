@@ -19,9 +19,9 @@ Run the basic agent:
 python agent.py
 ```
 
-Run the Yahoo Finance agent:
+Run the Yahoo Finance agent (simple local version):
 ```bash
-python agent_yahoo_finance.py
+python agent_yahoo_simple.py
 ```
 
 ## Financial Data Integration
@@ -47,7 +47,25 @@ python agent_financial_datasets.py
 
 ## Yahoo Finance Integration
 
-### Option A: SSH Tunnel to Remote Linux (Simplest for Old macOS)
+### Simple Local Server (RECOMMENDED - Works on ANY macOS!)
+
+**100% local, no Docker, no remote server, no curl-cffi build issues!**
+
+```bash
+python agent_yahoo_simple.py
+```
+
+This uses a lightweight Python server that fetches Yahoo Finance data directly via httpx. No external dependencies or compilation needed!
+
+**Available tools:**
+- Current stock prices
+- Historical price data
+- Stock news
+- Stock search
+
+---
+
+### Option A: SSH Tunnel to Remote Linux
 
 If you have access to **any Linux machine** (VPS, work server, friend's computer):
 
