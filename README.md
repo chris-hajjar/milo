@@ -9,6 +9,8 @@ A Pydantic AI agent integrated with a lightweight Yahoo Finance MCP (Model Conte
 - ✅ **No API Keys** - Uses Yahoo Finance's public API
 - ✅ **MCP Integration** - Follows Pydantic AI's official MCP pattern
 - ✅ **Real-time Data** - Stock prices, news, historical data, and search
+- ✅ **React Frontend** - Modern UI with CopilotKit integration and generative UI
+- ✅ **Multiple Interfaces** - CLI, built-in web UI, or React app
 
 ## Quick Start
 
@@ -32,12 +34,43 @@ OPENAI_API_KEY=your_key_here
 python agent.py
 ```
 
-**Web Interface:**
+**React Web Interface (Recommended):**
 ```bash
-uvicorn web:app --host 127.0.0.1 --port 7932
+# Terminal 1 - Start the backend
+uvicorn web:app --host 127.0.0.1 --port 8000
+
+# Terminal 2 - Start the frontend
+cd frontend
+npm install  # First time only
+npm run dev
 ```
 
-Then open your browser to `http://127.0.0.1:7932` to interact with the agent through a web UI.
+Then open your browser to `http://localhost:3000` for the modern React interface with CopilotKit.
+
+**Simple Web Interface:**
+```bash
+uvicorn web:app --host 127.0.0.1 --port 8000
+```
+
+Then open your browser to `http://127.0.0.1:8000` for the built-in Pydantic AI web UI.
+
+## React Frontend
+
+The project includes a modern React frontend built with:
+- **Next.js 15** - React framework with App Router
+- **CopilotKit** - AI chat interface integration
+- **Tailwind CSS** - Modern styling
+- **Generative UI** - Dynamic React components for stock data
+
+### Features
+
+- **Enhanced Chat Interface**: Suggestions, message history, and better UX
+- **Stock Data Cards**: Visual components showing ticker, price, and changes
+- **Dark Mode**: Built-in light/dark theme support
+- **Responsive Design**: Works on desktop and mobile
+- **API Proxy**: Next.js API route proxies requests to the backend
+
+See `frontend/README.md` for detailed documentation.
 
 ## How It Works
 
@@ -115,18 +148,28 @@ You: exit
 ```
 .
 ├── agent.py             # Yahoo Finance agent CLI (connects to MCP)
-├── web.py               # Yahoo Finance agent web interface
+├── web.py               # Yahoo Finance agent backend (FastAPI with AG UI)
 ├── server.py            # Local MCP server (provides tools)
 ├── requirements.txt     # Python dependencies
 ├── .env                 # API keys (create this)
+├── frontend/            # React + Next.js + CopilotKit UI
+│   ├── app/
+│   │   ├── page.tsx            # Main chat interface
+│   │   └── api/copilotkit/     # API proxy to backend
+│   └── package.json            # Node dependencies
 └── README.md            # This file
 ```
 
 ## Requirements
 
+**Backend:**
 - Python 3.11+
 - OpenAI API key
 - Dependencies: `pydantic-ai`, `openai`, `python-dotenv`, `mcp`, `httpx`, `fastmcp`
+
+**Frontend (for React UI):**
+- Node.js 18+
+- Dependencies: Next.js, React, CopilotKit (auto-installed with npm install)
 
 ## References
 
