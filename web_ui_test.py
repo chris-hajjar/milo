@@ -120,9 +120,15 @@ async def chat(request):
         # Send chart if found
         for m in result.all_messages():
             if m.kind == 'tool-return' and m.tool_name == 'get_price_history':
+                print(f"DEBUG: Found price history tool return")
+                print(f"DEBUG: Content type: {type(m.content)}")
+                print(f"DEBUG: Content keys: {m.content.keys() if isinstance(m.content, dict) else 'not a dict'}")
                 chart = make_chart(m.content)
                 if chart:
+                    print(f"DEBUG: Chart created successfully")
                     yield f"data: {json.dumps({'type': 'chart', 'chart': chart})}\n\n"
+                else:
+                    print(f"DEBUG: Chart was None")
 
     return StreamingResponse(stream(), media_type='text/event-stream')
 
