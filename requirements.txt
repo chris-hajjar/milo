@@ -1,6 +1,7 @@
-pydantic-ai
+pydantic-ai[ag-ui]
 openai
 python-dotenv
 mcp
 httpx
 fastmcp
+plotly
