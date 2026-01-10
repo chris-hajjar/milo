@@ -119,8 +119,11 @@ You: exit
 ├── server.py            # Local MCP server (provides tools)
 ├── requirements.txt     # Python dependencies
 ├── .env                 # API keys (create this)
+├── Haiku/               # Haiku Generator - AG UI code example
 └── README.md            # This file
 ```
+
+> **Note:** The `Haiku/` folder contains a code example demonstrating [AG UI](https://ai.pydantic.dev/ag-ui/) (Agent Generative UI) with Pydantic AI. It's a separate project showcasing how to build interactive UI experiences with AI agents. See [Haiku/README.md](Haiku/README.md) for details.
 
 ## Requirements
 
