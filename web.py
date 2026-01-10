@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
-import asyncio
+# to run: uvicorn web:app --host 127.0.0.1 --port 7932
+
+from pathlib import Path
 import os
 import sys
-from pathlib import Path
-
 from dotenv import load_dotenv
 from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerStdio
@@ -12,18 +11,17 @@ load_dotenv()
 
 HERE = Path(__file__).resolve().parent
 
-async def main():
-    yahoo_finance_server = MCPServerStdio(
-        sys.executable,                         # ✅ absolute path to current python
-        args=[str(HERE / 'yahoo_finance_simple_server.py')],
-        env=os.environ,                         # ✅ inherit PATH + other env vars
-        cwd=str(HERE),                          # ✅ run from project folder
-        timeout=30,
-    )
+yahoo_finance_server = MCPServerStdio(
+    sys.executable,
+    args=[str(HERE / "yahoo_finance_simple_server.py")],
+    env=os.environ,
+    cwd=str(HERE),
+    timeout=30,
+)
 
-    agent = Agent(
-        'openai:gpt-4o-mini',
-        system_prompt = """
+agent = Agent(
+    "openai:gpt-4o-mini",
+    system_prompt = """
 You are a financial data assistant that answers questions by calling Yahoo Finance MCP tools.
 
 You do NOT know stock prices yourself — you MUST use tools.
@@ -63,22 +61,9 @@ OUTPUT
 - After using tools, summarize results in plain English
 - Include ticker, price, and currency
 - Never show raw JSON unless explicitly asked
-""",
-        toolsets=[yahoo_finance_server],
-    )
+"""
+,
+    toolsets=[yahoo_finance_server],
+)
 
-    print("Yahoo Finance Agent ready (simple local version). Type your message (type 'exit' to quit):\n")
-
-    async with agent:
-        while True:
-            user_input = input("You: ").strip()
-            if user_input.lower() == 'exit':
-                break
-            if not user_input:
-                continue
-
-            result = await agent.run(user_input)
-            print(f"Agent: {result.output}\n")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+app = agent.to_web()
