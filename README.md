@@ -27,12 +27,6 @@ OPENAI_API_KEY=your_key_here
 
 ### 3. Run the Agent
 
-**Basic agent (no financial data):**
-```bash
-python agent.py
-```
-
-**Yahoo Finance agent (recommended):**
 ```bash
 python agent_yahoo_simple.py
 ```
@@ -112,7 +106,6 @@ You: exit
 
 ```
 .
-├── agent.py                          # Basic Pydantic AI agent
 ├── agent_yahoo_simple.py             # Yahoo Finance agent (connects to MCP)
 ├── yahoo_finance_simple_server.py    # Local MCP server (provides tools)
 ├── requirements.txt                  # Python dependencies
