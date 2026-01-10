@@ -115,7 +115,7 @@ async def chat(request):
         result = await agent.run(data['msg'])
 
         # Send text
-        yield f"data: {json.dumps({'type': 'text', 'text': result.data})}\n\n"
+        yield f"data: {json.dumps({'type': 'text', 'text': str(result.output)})}\n\n"
 
         # Send chart if found
         for m in result.all_messages():
