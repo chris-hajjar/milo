@@ -1,0 +1,16 @@
+{
+  "name": "yahoo-finance-copilot-runtime",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "CopilotKit runtime that connects to Yahoo Finance MCP server",
+  "main": "copilot-runtime.js",
+  "scripts": {
+    "runtime": "node copilot-runtime.js"
+  },
+  "dependencies": {
+    "@copilotkit/runtime": "^1.3.0",
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "express": "^4.21.2",
+    "cors": "^2.8.5"
+  }
+}

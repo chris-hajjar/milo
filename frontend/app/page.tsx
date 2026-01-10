@@ -9,7 +9,6 @@ export default function YahooFinanceChat() {
     <CopilotKit
       runtimeUrl="/api/copilotkit"
       showDevConsole={false}
-      agent="yahoo_finance_agent"
     >
       <CopilotSidebar
         defaultOpen={true}

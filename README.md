@@ -36,16 +36,26 @@ python agent.py
 
 **React Web Interface (Recommended):**
 ```bash
-# Terminal 1 - Start the backend
-uvicorn web:app --host 127.0.0.1 --port 8000
+# Terminal 1 - Python MCP Server (runs server.py with tools)
+# No need to run anything - it's started automatically by the runtime
 
-# Terminal 2 - Start the frontend
+# Terminal 2 - CopilotKit Runtime (connects to MCP server)
+npm run runtime
+
+# Terminal 3 - React Frontend
 cd frontend
 npm install  # First time only
 npm run dev
 ```
 
 Then open your browser to `http://localhost:3000` for the modern React interface with CopilotKit.
+
+**Architecture:**
+```
+Frontend (Next.js) → CopilotKit Runtime (Node.js) → Python MCP Server (server.py) → Yahoo Finance API
+```
+
+The CopilotKit runtime automatically discovers and exposes all tools from `server.py`, keeping it as the single source of truth.
 
 **Simple Web Interface:**
 ```bash
@@ -149,14 +159,16 @@ You: exit
 .
 ├── agent.py             # Yahoo Finance agent CLI (connects to MCP)
 ├── web.py               # Yahoo Finance agent backend (FastAPI with AG UI)
-├── server.py            # Local MCP server (provides tools)
+├── server.py            # Python MCP server - SOURCE OF TRUTH for all tools
+├── copilot-runtime.js   # CopilotKit runtime (connects to server.py via MCP)
 ├── requirements.txt     # Python dependencies
+├── package.json         # Runtime dependencies
 ├── .env                 # API keys (create this)
 ├── frontend/            # React + Next.js + CopilotKit UI
 │   ├── app/
 │   │   ├── page.tsx            # Main chat interface
-│   │   └── api/copilotkit/     # API proxy to backend
-│   └── package.json            # Node dependencies
+│   │   └── api/copilotkit/     # Proxy to CopilotKit runtime
+│   └── package.json            # Frontend dependencies
 └── README.md            # This file
 ```
 
