@@ -88,7 +88,7 @@ The `server.py` uses `fastmcp` to create an MCP server with 5 tools:
 4. **get_technical_indicators** - RSI, MACD, SMA, Bollinger Bands
 5. **search_stocks** - Search by company name or ticker
 
-It fetches data directly from Yahoo Finance's public JSON API using `httpx` - no `yfinance` library or `curl-cffi` dependencies.
+It fetches data directly from Yahoo Finance's public JSON API using `httpx`.
 
 ## Example Usage
 
