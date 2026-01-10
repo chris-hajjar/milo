@@ -7,7 +7,7 @@ import { CopilotSidebar } from "@copilotkit/react-ui";
 export default function YahooFinanceChat() {
   return (
     <CopilotKit
-      runtimeUrl="http://127.0.0.1:8000"
+      runtimeUrl="/api/copilotkit"
       showDevConsole={false}
       agent="yahoo_finance_agent"
     >
