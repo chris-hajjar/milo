@@ -13,7 +13,7 @@ HERE = Path(__file__).resolve().parent
 
 yahoo_finance_server = MCPServerStdio(
     sys.executable,
-    args=[str(HERE / "yahoo_finance_simple_server.py")],
+    args=[str(HERE / "server.py")],
     env=os.environ,
     cwd=str(HERE),
     timeout=30,

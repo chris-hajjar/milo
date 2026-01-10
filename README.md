@@ -27,20 +27,28 @@ OPENAI_API_KEY=your_key_here
 
 ### 3. Run the Agent
 
+**Command Line Interface:**
 ```bash
-python agent_yahoo_simple.py
+python agent.py
 ```
+
+**Web Interface:**
+```bash
+uvicorn web:app --host 127.0.0.1 --port 7932
+```
+
+Then open your browser to `http://127.0.0.1:7932` to interact with the agent through a web UI.
 
 ## How It Works
 
 ### Architecture
 
 ```
-User Query → agent_yahoo_simple.py → Pydantic AI Agent
+User Query → agent.py → Pydantic AI Agent
                                            ↓
                                     MCPServerStdio
                                            ↓
-                            yahoo_finance_simple_server.py
+                            server.py
                                            ↓
                                 Yahoo Finance Public API
 ```
@@ -52,7 +60,7 @@ The project uses Pydantic AI's `MCPServerStdio` to connect to a local MCP server
 ```python
 yahoo_finance_server = MCPServerStdio(
     'python3',
-    args=['yahoo_finance_simple_server.py'],
+    args=['server.py'],
     timeout=30
 )
 
@@ -66,7 +74,7 @@ This follows Pydantic AI's recommended pattern for local MCP servers.
 
 ### Yahoo Finance MCP Server
 
-The `yahoo_finance_simple_server.py` uses `fastmcp` to create an MCP server with 4 tools:
+The `server.py` uses `fastmcp` to create an MCP server with 4 tools:
 
 1. **get_stock_price** - Current price and basic info
 2. **get_stock_news** - Recent news articles
@@ -78,7 +86,7 @@ It fetches data directly from Yahoo Finance's public JSON API using `httpx` - no
 ## Example Usage
 
 ```bash
-$ python agent_yahoo_simple.py
+$ python agent.py
 
 You: What's the current stock price of AAPL?
 Agent: Apple Inc. (AAPL) is currently trading at $185.92...
@@ -106,11 +114,12 @@ You: exit
 
 ```
 .
-├── agent_yahoo_simple.py             # Yahoo Finance agent (connects to MCP)
-├── yahoo_finance_simple_server.py    # Local MCP server (provides tools)
-├── requirements.txt                  # Python dependencies
-├── .env                             # API keys (create this)
-└── README.md                        # This file
+├── agent.py             # Yahoo Finance agent CLI (connects to MCP)
+├── web.py               # Yahoo Finance agent web interface
+├── server.py            # Local MCP server (provides tools)
+├── requirements.txt     # Python dependencies
+├── .env                 # API keys (create this)
+└── README.md            # This file
 ```
 
 ## Requirements
