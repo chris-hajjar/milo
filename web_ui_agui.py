@@ -95,8 +95,7 @@ async def emit_chart(
 # Create AG-UI app (handles SSE and routing automatically)
 app = AGUIApp(
     agent,
-    deps=StateDeps(ChartState()),
-    title="Yahoo Finance Agent with Charts"
+    deps=StateDeps(ChartState())
 )
 
 print(f"\n=== AG-UI App Started ===")
