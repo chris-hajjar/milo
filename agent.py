@@ -1,35 +1,44 @@
 #!/usr/bin/env python3
-"""Simple Pydantic AI agent with MCP support."""
+"""Simple Pydantic AI agent with Yahoo Finance MCP support."""
 
 import asyncio
 from pydantic_ai import Agent
-from pydantic_ai.mcp import MCPClient
+from pydantic_ai.mcp import MCPServerStdio
 
 
 async def main():
-    # Create MCP client (optional - add servers as needed)
-    mcp = MCPClient()
-
-    # Create basic agent with concise instructions
-    agent = Agent(
-        'anthropic:claude-sonnet-4-0',
-        system_prompt='Be concise, reply with one sentence.',
-        mcp_client=mcp,
+    # Create Yahoo Finance MCP server connection
+    yahoo_finance_server = MCPServerStdio(
+        command='uvx',
+        args=['yahoo-finance-server'],
     )
 
-    print("Agent ready. Type your message (or 'quit' to exit):\n")
+    # Create agent with Yahoo Finance tools
+    agent = Agent(
+        'anthropic:claude-sonnet-4-0',
+        system_prompt='You are a helpful financial assistant. Use the Yahoo Finance tools to answer questions about stocks, market data, and financial information.',
+        toolsets=[yahoo_finance_server],
+    )
 
-    while True:
-        user_input = input("You: ").strip()
+    print("Yahoo Finance Agent ready. Ask questions like 'What did Apple close at today?'\n")
+    print("Type 'quit' to exit.\n")
 
-        if user_input.lower() in ['quit', 'exit', 'q']:
-            break
+    # Start the MCP server and run the agent
+    async with agent.run_mcp_servers():
+        while True:
+            user_input = input("You: ").strip()
 
-        if not user_input:
-            continue
+            if user_input.lower() in ['quit', 'exit', 'q']:
+                break
 
-        result = await agent.run(user_input)
-        print(f"Agent: {result.data}\n")
+            if not user_input:
+                continue
+
+            try:
+                result = await agent.run(user_input)
+                print(f"Agent: {result.data}\n")
+            except Exception as e:
+                print(f"Error: {e}\n")
 
 
 if __name__ == "__main__":
