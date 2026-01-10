@@ -1,21 +1,19 @@
 # Simple Pydantic AI Agent
 
-A minimal Pydantic AI agent with MCP support.
+A minimal Pydantic AI agent powered by OpenAI.
 
-## Setup
+## Quick Start
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Set Environment Variable
-
-```bash
-export ANTHROPIC_API_KEY=your_key_here
+Create a `.env` file:
+```
+OPENAI_API_KEY=your_key_here
 ```
 
-## Run
-
+Run the agent:
 ```bash
 python agent.py
 ```
