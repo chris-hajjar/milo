@@ -15,7 +15,7 @@ load_dotenv()
 async def main():
     # Connect to our simple local Yahoo Finance MCP server
     yahoo_finance_server = MCPServerStdio(
-        'python',
+        'python3',
         args=['yahoo_finance_simple_server.py'],
         timeout=30
     )

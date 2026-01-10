@@ -51,7 +51,7 @@ The project uses Pydantic AI's `MCPServerStdio` to connect to a local MCP server
 
 ```python
 yahoo_finance_server = MCPServerStdio(
-    'python',
+    'python3',
     args=['yahoo_finance_simple_server.py'],
     timeout=30
 )
