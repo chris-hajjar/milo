@@ -1,3 +1,5 @@
 pydantic-ai
 openai
 python-dotenv
+mcp
+yahoo-finance-server
