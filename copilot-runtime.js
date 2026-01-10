@@ -3,6 +3,8 @@
  *
  * This server connects to the Python MCP server and exposes it to CopilotKit.
  * Run with: node copilot-runtime.js
+ *
+ * Loads environment variables from .env in the root directory.
  */
 
 import { CopilotRuntime, OpenAIAdapter } from '@copilotkit/runtime';
@@ -10,6 +12,10 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
+
+// Load .env from root directory (single source of truth)
+dotenv.config();
 
 const app = express();
 app.use(cors());

@@ -22,10 +22,16 @@ pip install -r requirements.txt
 
 ### 2. Set Up Environment
 
-Create a `.env` file:
-```
+Create a `.env` file **in the root directory** (single source of truth for all API keys):
+```bash
 OPENAI_API_KEY=your_key_here
 ```
+
+This `.env` file is used by:
+- Python CLI (`agent.py`)
+- Python web interface (`web.py`)
+- CopilotKit runtime (`copilot-runtime.js`)
+- React frontend (via runtime)
 
 ### 3. Run the Agent
 
