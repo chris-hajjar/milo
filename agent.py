@@ -12,7 +12,7 @@ async def main():
 
     # Create basic agent with concise instructions
     agent = Agent(
-        'anthropic:claude-sonnet-4-0',
+        'anthropic:claude-3-5-haiku-20241022',
         system_prompt='Be concise, reply with one sentence.',
         mcp_client=mcp,
     )
