@@ -117,6 +117,13 @@ async def chat(request):
         # Send text
         yield f"data: {json.dumps({'type': 'text', 'text': str(result.output)})}\n\n"
 
+        # Debug: log all messages
+        print(f"\nDEBUG: Total messages: {len(list(result.all_messages()))}")
+        for i, m in enumerate(result.all_messages()):
+            print(f"DEBUG: Message {i}: kind={m.kind}, has tool_name={hasattr(m, 'tool_name')}")
+            if hasattr(m, 'tool_name'):
+                print(f"DEBUG:   tool_name={m.tool_name}")
+
         # Send chart if found
         for m in result.all_messages():
             if m.kind == 'tool-return' and m.tool_name == 'get_price_history':
