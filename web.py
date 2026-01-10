@@ -66,4 +66,4 @@ OUTPUT
     toolsets=[yahoo_finance_server],
 )
 
-app = agent.to_web()
+app = agent.to_ag_ui()
