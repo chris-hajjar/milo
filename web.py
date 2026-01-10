@@ -1,4 +1,4 @@
-# to run: uvicorn web:app --host 127.0.0.1 --port 7932
+# to run: uvicorn web:app --host 127.0.0.1 --port 8000
 
 from pathlib import Path
 import os
@@ -6,6 +6,7 @@ import sys
 from dotenv import load_dotenv
 from pydantic_ai import Agent
 from pydantic_ai.mcp import MCPServerStdio
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
@@ -21,6 +22,7 @@ yahoo_finance_server = MCPServerStdio(
 
 agent = Agent(
     "openai:gpt-4o-mini",
+    name="yahoo_finance_agent",
     system_prompt = """
 You are a financial data assistant that answers questions by calling Yahoo Finance MCP tools.
 
@@ -67,3 +69,12 @@ OUTPUT
 )
 
 app = agent.to_ag_ui()
+
+# Add CORS middleware for frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Next.js dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
