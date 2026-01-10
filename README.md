@@ -27,14 +27,37 @@ python agent_yahoo_finance.py
 
 The Yahoo Finance agent uses MCP (Model Context Protocol) via stdio for lightweight server connection. It provides tools for: ticker info, news, search, top entities, and price history.
 
-**Requirements:** Docker (to avoid curl-cffi build issues on macOS)
+### Option 1: Docker (Recommended for macOS)
 
-Test the MCP connection:
+**Why Docker?** The `curl-cffi` dependency fails to build on macOS. Docker provides pre-built binaries.
+
 ```bash
-python test_yahoo_mcp.py
+# Pull image once (cached locally after first pull)
+docker pull narumi/yfinance-mcp
+
+# Run agent
+python agent_yahoo_finance.py
 ```
 
-**Alternative without Docker:** If you have a Linux system or want to try building dependencies locally, you can modify `agent_yahoo_finance.py` to use:
-```python
+Test connection: `python test_yahoo_mcp.py`
+
+### Option 2: Local Installation (Linux only)
+
+On Linux where `curl-cffi` builds properly:
+
+```bash
+# Install once
+uv pip install --system yfmcp
+
+# Run agent (uses locally installed command)
+python agent_yahoo_finance_local.py
+```
+
+### Option 3: On-the-fly with uvx (Linux only)
+
+```bash
+# Modify agent to use:
 yahoo_finance_server = MCPServerStdio('uvx', args=['yfmcp@latest'], timeout=30)
 ```
+
+**Note:** Options 2 and 3 will fail on macOS with `curl-cffi` build errors.
