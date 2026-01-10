@@ -15,7 +15,7 @@ HERE = Path(__file__).resolve().parent
 async def main():
     yahoo_finance_server = MCPServerStdio(
         sys.executable,                         # ✅ absolute path to current python
-        args=[str(HERE / 'yahoo_finance_simple_server.py')],
+        args=[str(HERE / 'server.py')],
         env=os.environ,                         # ✅ inherit PATH + other env vars
         cwd=str(HERE),                          # ✅ run from project folder
         timeout=30,
