@@ -1,4 +1,4 @@
-# to run: uvicorn web_charts:app --host 127.0.0.1 --port 7932
+# to run: uvicorn web_ui_test:app --host 127.0.0.1 --port 7932
 # Ultra-simple chart implementation - adds Plotly charts to the basic web UI
 
 from pathlib import Path
