@@ -26,20 +26,23 @@ This is a code example that requires integration into a full application stack:
 
 ### Backend (Python Agent)
 
-1. Install dependencies:
+1. Install dependencies (if not already installed):
 ```bash
 pip install pydantic-ai openai python-dotenv
 ```
 
-2. Set your OpenAI API key in `.env`:
+2. Make sure your root `.env` file has your OpenAI API key:
 ```
 OPENAI_API_KEY=your_key_here
 ```
 
-3. Run the agent server:
+3. Run the agent server from the Haiku directory:
 ```bash
+cd Haiku
 uvicorn tool_based_generative_ui:app --host 127.0.0.1 --port 8000
 ```
+
+The agent will use the `.env` file from the root directory.
 
 ### Frontend (Next.js + React)
 
