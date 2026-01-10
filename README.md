@@ -8,7 +8,8 @@ A Pydantic AI agent integrated with a lightweight Yahoo Finance MCP (Model Conte
 - ✅ **Works on Any macOS** - No Docker or build tools required
 - ✅ **No API Keys** - Uses Yahoo Finance's public API
 - ✅ **MCP Integration** - Follows Pydantic AI's official MCP pattern
-- ✅ **Real-time Data** - Stock prices, news, historical data, and search
+- ✅ **Real-time Data** - Stock prices, news, historical data, technical indicators, and search
+- ✅ **Interactive Charts** - Plotly visualizations for price history
 
 ## Quick Start
 
@@ -37,7 +38,12 @@ python agent.py
 uvicorn web:app --host 127.0.0.1 --port 7932
 ```
 
-Then open your browser to `http://127.0.0.1:7932` to interact with the agent through a web UI.
+**Web Interface with Charts:**
+```bash
+uvicorn web_ui_test:app --host 127.0.0.1 --port 7932
+```
+
+Open your browser to `http://127.0.0.1:7932` to interact with the agent through a web UI.
 
 ## How It Works
 
@@ -74,12 +80,13 @@ This follows Pydantic AI's recommended pattern for local MCP servers.
 
 ### Yahoo Finance MCP Server
 
-The `server.py` uses `fastmcp` to create an MCP server with 4 tools:
+The `server.py` uses `fastmcp` to create an MCP server with 5 tools:
 
 1. **get_stock_price** - Current price and basic info
 2. **get_stock_news** - Recent news articles
 3. **get_price_history** - Historical price data (1d to max range)
-4. **search_stocks** - Search by company name or ticker
+4. **get_technical_indicators** - RSI, MACD, SMA, Bollinger Bands
+5. **search_stocks** - Search by company name or ticker
 
 It fetches data directly from Yahoo Finance's public JSON API using `httpx` - no `yfinance` library or `curl-cffi` dependencies.
 
@@ -116,6 +123,7 @@ You: exit
 .
 ├── agent.py             # Yahoo Finance agent CLI (connects to MCP)
 ├── web.py               # Yahoo Finance agent web interface
+├── web_ui_test.py       # Web interface with Plotly chart support
 ├── server.py            # Local MCP server (provides tools)
 ├── requirements.txt     # Python dependencies
 ├── .env                 # API keys (create this)
@@ -126,7 +134,7 @@ You: exit
 
 - Python 3.11+
 - OpenAI API key
-- Dependencies: `pydantic-ai`, `openai`, `python-dotenv`, `mcp`, `httpx`, `fastmcp`
+- Dependencies: `pydantic-ai[ag-ui]`, `openai`, `python-dotenv`, `mcp`, `httpx`, `fastmcp`, `plotly`
 
 ## References
 
