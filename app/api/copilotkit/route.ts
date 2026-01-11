@@ -21,7 +21,6 @@ const runtime = new CopilotRuntime({
 export const POST = async (req: NextRequest) => {
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,
-    serviceAdapter: yahooFinanceAgent,
     endpoint: "/api/copilotkit",
   });
 

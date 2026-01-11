@@ -62,6 +62,18 @@ PRICE HISTORY
 SEARCH
 - If the user asks for tickers or to find a company → call search_stocks
 
+UI UPDATES
+- When you get stock price data from get_stock_price, ALWAYS call the update_stock_card action
+- Extract the following fields from the response:
+  - ticker: the stock symbol
+  - price: currentPrice or regularMarketPrice
+  - open: regularMarketOpen
+  - high: regularMarketDayHigh
+  - low: regularMarketDayLow
+  - volume: regularMarketVolume
+  - previousClose: regularMarketPreviousClose
+- This updates the visual stock card on the page
+
 ERROR HANDLING
 - If a tool returns an error, do NOT retry with guessed symbols
 - Ask the user for clarification
