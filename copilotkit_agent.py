@@ -71,5 +71,5 @@ OUTPUT
     toolsets=[yahoo_finance_server],
 )
 
-# Convert to CopilotKit AG UI runtime with agent name
-app = agent.to_ag_ui(agent_name="yahoo_finance_agent")
+# Convert to CopilotKit AG UI runtime
+app = agent.to_ag_ui()
