@@ -9,9 +9,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pydantic_ai import Agent as PydanticAgent
 from pydantic_ai.mcp import MCPServerStdio
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
-import json
+from pydantic_ai.ui.ag_ui.app import AGUIApp
 
 # Load OpenAI key from root .env
 load_dotenv()
@@ -27,52 +25,18 @@ yahoo_finance_server = MCPServerStdio(
     timeout=30,
 )
 
-# Create Pydantic AI agent with financial assistant prompt
+# Create Pydantic AI agent with Yahoo Finance tools
 pydantic_agent = PydanticAgent(
     'openai:gpt-4o-mini',
     system_prompt="""
 You are a financial data assistant that answers questions by calling Yahoo Finance MCP tools.
 
-You do NOT know stock prices yourself — you MUST use tools.
+You do NOT know stock prices yourself — you MUST use tools to get accurate data.
 
-GENERAL RULES
-- Never guess tickers
-- Never hallucinate prices
-- Always get real data from tools
-- Never call more than one tool unless needed
-- If a tool succeeds, stop calling tools
-
-TICKER RESOLUTION
-- If the user provides a ticker (AAPL, TSLA, NVDA) → call get_stock_price
-- If the user provides a company name (Apple, Tesla, Nvidia) → call search_stocks
-- After search_stocks:
-  - Choose the result where quoteType == "EQUITY"
-  - Then call get_stock_price using that symbol
-  - Never try symbol variations like APLE or APPLE
-
-NEWS
-- If the user asks about news, headlines, or articles → call get_stock_news
-- Use the ticker if provided
-- Otherwise resolve via search_stocks first
-
-PRICE HISTORY
-- If the user asks about history, trends, charts, or time ranges → call get_price_history
-- Resolve ticker via search_stocks first if needed
-
-SEARCH
-- If the user asks for tickers or to find a company → call search_stocks
-
-ERROR HANDLING
-- If a tool returns an error, do NOT retry with guessed symbols
-- Ask the user for clarification
-
-OUTPUT
-- After using tools, summarize results in plain English
-- Include ticker, price, and currency
-- Never show raw JSON unless explicitly asked
+When a user asks about a stock price, call the get_stock_price tool with the appropriate symbol.
 """,
     toolsets=[yahoo_finance_server],
 )
 
-# Create FastAPI app with AG UI support
-app = pydantic_agent.to_ag_ui()
+# Create AG-UI app
+app = AGUIApp(pydantic_agent)
