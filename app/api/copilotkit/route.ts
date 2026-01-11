@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { HttpAgent } from "@ag-ui/client";
 import {
   CopilotRuntime,
+  ExperimentalEmptyAdapter,
   copilotRuntimeNextJSAppRouterEndpoint,
 } from "@copilotkit/runtime";
 
@@ -9,6 +10,9 @@ import {
 const yahooFinanceAgent = new HttpAgent({
   url: "http://127.0.0.1:8000/",
 });
+
+// Service adapter for single-agent setup
+const serviceAdapter = new ExperimentalEmptyAdapter();
 
 // Initialize CopilotKit runtime with the agent
 const runtime = new CopilotRuntime({
@@ -21,6 +25,7 @@ const runtime = new CopilotRuntime({
 export const POST = async (req: NextRequest) => {
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,
+    serviceAdapter,
     endpoint: "/api/copilotkit",
   });
 
