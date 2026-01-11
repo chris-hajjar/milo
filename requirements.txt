@@ -4,3 +4,4 @@ python-dotenv
 mcp
 httpx
 fastmcp
+copilotkit

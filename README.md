@@ -1,21 +1,27 @@
-# Pydantic AI Agent with Yahoo Finance MCP
+# Milo - Stock Market AI Agent
 
-A Pydantic AI agent integrated with a lightweight Yahoo Finance MCP (Model Context Protocol) server for real-time stock market data.
+A financial AI assistant built with Pydantic AI, Yahoo Finance MCP tools, and CopilotKit UI.
 
 ## Features
 
-- ✅ **100% Local** - Runs entirely on your machine, no external services
-- ✅ **Works on Any macOS** - No Docker or build tools required
-- ✅ **No API Keys** - Uses Yahoo Finance's public API
-- ✅ **MCP Integration** - Follows Pydantic AI's official MCP pattern
-- ✅ **Real-time Data** - Stock prices, news, historical data, and search
+- **CopilotKit Chat UI** - Interactive sidebar chat interface
+- **Yahoo Finance Data** - Real-time stock prices, news, historical data, and search
+- **MCP Tools** - Modular tool system using Model Context Protocol
+- **AG-UI Protocol** - Connects Pydantic AI backend to CopilotKit frontend
+- **100% Local** - No external services, uses Yahoo Finance public API
 
 ## Quick Start
 
 ### 1. Install Dependencies
 
+**Python:**
 ```bash
 pip install -r requirements.txt
+```
+
+**Node.js:**
+```bash
+npm install
 ```
 
 ### 2. Set Up Environment
@@ -25,116 +31,93 @@ Create a `.env` file:
 OPENAI_API_KEY=your_key_here
 ```
 
-### 3. Run the Agent
+### 3. Run the Application
 
-**Command Line Interface:**
+**Terminal 1 - Python Backend:**
 ```bash
-python agent.py
+uvicorn copilotkit_agent:app --host 127.0.0.1 --port 8000
 ```
 
-**Web Interface:**
+**Terminal 2 - Next.js Frontend:**
 ```bash
-uvicorn web:app --host 127.0.0.1 --port 7932
+npm run dev
 ```
 
-Then open your browser to `http://127.0.0.1:7932` to interact with the agent through a web UI.
+**Open:** http://localhost:3000
 
-## How It Works
-
-### Architecture
+## Architecture
 
 ```
-User Query → agent.py → Pydantic AI Agent
-                                           ↓
-                                    MCPServerStdio
-                                           ↓
-                            server.py
-                                           ↓
-                                Yahoo Finance Public API
+Browser (CopilotKit UI)
+    ↓
+Next.js API Route (HttpAgent)
+    ↓
+copilotkit_agent.py (Pydantic AI + AG-UI)
+    ↓
+server.py (FastMCP Tools)
+    ↓
+Yahoo Finance Public API
 ```
 
-### MCP Integration
+## Available Tools
 
-The project uses Pydantic AI's `MCPServerStdio` to connect to a local MCP server via stdio transport (stdin/stdout):
+The agent has access to these Yahoo Finance tools via MCP:
 
-```python
-yahoo_finance_server = MCPServerStdio(
-    'python3',
-    args=['server.py'],
-    timeout=30
-)
+- `get_stock_price` - Current price and basic info
+- `get_stock_news` - Recent news articles
+- `get_price_history` - Historical OHLCV data
+- `search_stocks` - Search by company name or ticker
+- `get_technical_indicators` - RSI, SMA, MACD, Bollinger Bands
 
-agent = Agent(
-    'openai:gpt-4o-mini',
-    toolsets=[yahoo_finance_server]  # Register MCP server as toolset
-)
-```
+## Example Queries
 
-This follows Pydantic AI's recommended pattern for local MCP servers.
-
-### Yahoo Finance MCP Server
-
-The `server.py` uses `fastmcp` to create an MCP server with 4 tools:
-
-1. **get_stock_price** - Current price and basic info
-2. **get_stock_news** - Recent news articles
-3. **get_price_history** - Historical price data (1d to max range)
-4. **search_stocks** - Search by company name or ticker
-
-It fetches data directly from Yahoo Finance's public JSON API using `httpx` - no `yfinance` library or `curl-cffi` dependencies.
-
-## Example Usage
-
-```bash
-$ python agent.py
-
-You: What's the current stock price of AAPL?
-Agent: Apple Inc. (AAPL) is currently trading at $185.92...
-
-You: Get me the latest news for TSLA
-Agent: Here are the recent news articles for Tesla...
-
-You: Show me NVDA price history for the past month
-Agent: Here's the price history for NVIDIA over the past month...
-
-You: exit
-```
-
-## Why This Approach?
-
-**Problem:** Official Yahoo Finance MCP servers use `yfinance` → `curl-cffi` → native C compilation, which fails on older macOS versions.
-
-**Solution:** We built a lightweight MCP server that:
-- Calls Yahoo Finance's public API directly with `httpx`
-- No compilation or build tools needed
-- Works on any macOS version
-- Follows Pydantic AI's official MCP pattern
+- "What's the price of AAPL?"
+- "Get me news about Tesla"
+- "Show technical indicators for NVDA"
+- "What was Microsoft's stock price last month?"
 
 ## Project Structure
 
 ```
 .
-├── agent.py             # Yahoo Finance agent CLI (connects to MCP)
-├── web.py               # Yahoo Finance agent web interface
-├── server.py            # Local MCP server (provides tools)
-├── requirements.txt     # Python dependencies
-├── .env                 # API keys (create this)
-├── Haiku/               # Haiku Generator - AG UI code example
-└── README.md            # This file
+├── copilotkit_agent.py     # Pydantic AI agent with AG-UI endpoint
+├── server.py               # FastMCP server with Yahoo Finance tools
+├── app/                    # Next.js app
+│   ├── page.tsx           # Main page with CopilotSidebar
+│   └── api/copilotkit/    # AG-UI HttpAgent proxy
+├── components/             # React components
+├── requirements.txt        # Python dependencies
+├── package.json           # Node.js dependencies
+└── Haiku/                 # AG-UI example project
 ```
 
-> **Note:** The `Haiku/` folder contains a code example demonstrating [AG UI](https://ai.pydantic.dev/ag-ui/) (Agent Generative UI) with Pydantic AI. It's a separate project showcasing how to build interactive UI experiences with AI agents. See [Haiku/README.md](Haiku/README.md) for details.
+## Additional Examples
+
+**CLI Agent:**
+```bash
+python agent.py
+```
+
+**Web UI (alternative):**
+```bash
+uvicorn web:app --host 127.0.0.1 --port 7932
+```
+
+## Tech Stack
+
+- **Backend:** Pydantic AI, FastAPI, FastMCP, OpenAI
+- **Frontend:** Next.js, React, CopilotKit, AG-UI Protocol
+- **Data:** Yahoo Finance Public API (no API key required)
 
 ## Requirements
 
 - Python 3.11+
+- Node.js 18+
 - OpenAI API key
-- Dependencies: `pydantic-ai`, `openai`, `python-dotenv`, `mcp`, `httpx`, `fastmcp`
 
 ## References
 
 - [Pydantic AI](https://ai.pydantic.dev/)
-- [Pydantic AI MCP Client](https://ai.pydantic.dev/mcp/client/)
-- [Pydantic AI Toolsets](https://ai.pydantic.dev/toolsets/)
+- [CopilotKit](https://www.copilotkit.ai/)
+- [AG-UI Protocol](https://www.copilotkit.ai/ag-ui)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
-- [Yahoo Finance](https://finance.yahoo.com/)
