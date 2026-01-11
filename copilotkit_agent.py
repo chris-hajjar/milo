@@ -7,17 +7,28 @@ import os
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import FastAPI
-from starlette.requests import Request
-from starlette.responses import Response
-from pydantic_ai import Agent as PydanticAgent
+from pydantic import BaseModel
+from pydantic_ai import Agent as PydanticAgent, RunContext, ToolReturn
 from pydantic_ai.mcp import MCPServerStdio
-from pydantic_ai.ui.ag_ui import AGUIAdapter
+from pydantic_ai.ui import StateDeps
+from pydantic_ai.ui.ag_ui.app import AGUIApp
+from ag_ui.core import StateSnapshotEvent, EventType
 
 # Load OpenAI key from root .env
 load_dotenv()
 
 HERE = Path(__file__).resolve().parent
+
+# Define stock data state model
+class StockState(BaseModel):
+    """State for stock price card."""
+    ticker: str = ""
+    price: float = 0.0
+    open: float = 0.0
+    high: float = 0.0
+    low: float = 0.0
+    volume: int = 0
+    previousClose: float = 0.0
 
 # Connect to Yahoo Finance MCP server
 yahoo_finance_server = MCPServerStdio(
@@ -28,9 +39,10 @@ yahoo_finance_server = MCPServerStdio(
     timeout=30,
 )
 
-# Create Pydantic AI agent with financial assistant prompt
+# Create Pydantic AI agent with state management
 pydantic_agent = PydanticAgent(
     'openai:gpt-4o-mini',
+    deps_type=StateDeps[StockState],
     system_prompt="""
 You are a financial data assistant that answers questions by calling Yahoo Finance MCP tools.
 
@@ -68,19 +80,46 @@ ERROR HANDLING
 - Ask the user for clarification
 
 OUTPUT
-- CRITICAL: After successfully calling get_stock_price, you MUST immediately call the update_stock_card tool with ALL the stock data fields
-- The update_stock_card tool requires: ticker, price, open, high, low, volume, previousClose
-- Extract these exact fields from the get_stock_price response: regularMarketPrice, regularMarketOpen, regularMarketDayHigh, regularMarketDayLow, regularMarketVolume, regularMarketPreviousClose
-- Only after calling update_stock_card, then provide a brief text summary
+- CRITICAL: After successfully calling get_stock_price, you MUST immediately call update_stock_card tool
+- Extract these fields from the response: ticker symbol, regularMarketPrice, regularMarketOpen, regularMarketDayHigh, regularMarketDayLow, regularMarketVolume, regularMarketPreviousClose
+- Then provide a brief text summary
 - Never show raw JSON unless explicitly asked
 """,
     toolsets=[yahoo_finance_server],
 )
 
-# Create FastAPI app and handle AG-UI requests dynamically
-app = FastAPI()
+# Add tool to update stock card state
+@pydantic_agent.tool
+async def update_stock_card(
+    ctx: RunContext[StateDeps[StockState]],
+    ticker: str,
+    price: float,
+    open: float,
+    high: float,
+    low: float,
+    volume: int,
+    previousClose: float
+) -> ToolReturn:
+    """Update the stock price card with current market data."""
+    # Update state
+    ctx.deps.state.ticker = ticker
+    ctx.deps.state.price = price
+    ctx.deps.state.open = open
+    ctx.deps.state.high = high
+    ctx.deps.state.low = low
+    ctx.deps.state.volume = volume
+    ctx.deps.state.previousClose = previousClose
 
-@app.post('/')
-async def run_agent(request: Request) -> Response:
-    # This method extracts frontend tools from each request's RunAgentInput
-    return await AGUIAdapter.dispatch_request(request, agent=pydantic_agent)
+    # Return state snapshot event to sync with frontend
+    return ToolReturn(
+        return_value=f"Stock card updated with {ticker} data",
+        metadata=[
+            StateSnapshotEvent(
+                type=EventType.STATE_SNAPSHOT,
+                snapshot=ctx.deps.state.model_dump(),
+            ),
+        ],
+    )
+
+# Create AG-UI app with state management
+app = AGUIApp(pydantic_agent, deps=StateDeps(StockState()))

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useCopilotAction } from "@copilotkit/react-core";
+import React from "react";
+import { useCoAgent } from "@copilotkit/react-core";
 import { Card, CardContent, Typography, Box, Divider } from "@mui/material";
 
 interface StockData {
@@ -15,84 +15,23 @@ interface StockData {
 }
 
 export default function StockCard() {
-  const [stockData, setStockData] = useState<StockData | null>(null);
-
-  useCopilotAction(
-    {
-      name: "update_stock_card",
-      description: "Updates the stock price card with current market data for a given ticker symbol",
-      parameters: [
-        {
-          name: "ticker",
-          type: "string",
-          required: true,
-          description: "Stock ticker symbol (e.g., AAPL, TSLA, NVDA)",
-        },
-        {
-          name: "price",
-          type: "number",
-          required: true,
-          description: "Current stock price",
-        },
-        {
-          name: "open",
-          type: "number",
-          required: true,
-          description: "Opening price",
-        },
-        {
-          name: "high",
-          type: "number",
-          required: true,
-          description: "Day's high price",
-        },
-        {
-          name: "low",
-          type: "number",
-          required: true,
-          description: "Day's low price",
-        },
-        {
-          name: "volume",
-          type: "number",
-          required: true,
-          description: "Trading volume",
-        },
-        {
-          name: "previousClose",
-          type: "number",
-          required: true,
-          description: "Previous closing price",
-        },
-      ],
-      handler: async ({ ticker, price, open, high, low, volume, previousClose }) => {
-        console.log('update_stock_card called with:', { ticker, price, open, high, low, volume, previousClose });
-
-        const newStockData: StockData = {
-          ticker: ticker || "",
-          price: price || 0,
-          open: open || 0,
-          high: high || 0,
-          low: low || 0,
-          volume: volume || 0,
-          previousClose: previousClose || 0,
-        };
-        setStockData(newStockData);
-        return `Stock card updated with ${ticker} data!`;
-      },
-      render: ({ args }) => {
-        console.log('Render called with args:', args);
-        if (!args.ticker) {
-          console.log('No ticker in args, returning empty');
-          return <></>;
-        }
-        return <StockCardDisplay data={args as StockData} />;
-      },
+  // Use state management via AG-UI protocol
+  const { state } = useCoAgent<StockData>({
+    name: "copilotkit_agent",
+    initialState: {
+      ticker: "",
+      price: 0,
+      open: 0,
+      high: 0,
+      low: 0,
+      volume: 0,
+      previousClose: 0,
     },
-    []
-  );
+  });
 
-  if (!stockData) {
+  console.log('Current state:', state);
+
+  if (!state.ticker) {
     return (
       <Card
         sx={{
@@ -180,7 +119,7 @@ export default function StockCard() {
     );
   }
 
-  return <StockCardDisplay data={stockData} />;
+  return <StockCardDisplay data={state} />;
 }
 
 function StockCardDisplay({ data }: { data: StockData }) {
