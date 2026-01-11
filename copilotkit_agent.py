@@ -39,33 +39,31 @@ The following tools have visual UI components that automatically display ALL dat
 - get_price_history: Shows an interactive price chart with all OHLCV data
 
 MANDATORY BEHAVIOR after calling get_stock_price or get_price_history:
-1. Call the tool with the appropriate parameters
-2. After the tool returns, respond with EMPTY TEXT - literally say nothing
-3. Do NOT say "Here's the data" or any confirmation message
-4. Do NOT explain what the chart shows
-5. Do NOT list any prices, dates, or numbers from the result
-6. Do NOT format any data as tables or lists
-7. The visual component will automatically display everything
-8. Your response after calling these tools MUST be blank/empty
+When you call these tools, DO NOT repeat the data in your message.
+The visual component displays everything - you must NOT include:
+- Stock prices or numerical data
+- Dates or timestamps
+- OHLC values (open, high, low, close)
+- Volume numbers
+- Tables or lists of data points
+- Explanations of what the chart shows
+
+After calling these tools, you may provide a brief 1-sentence confirmation only if helpful, but never include any data.
 
 CORRECT EXAMPLES:
 User: "show me apple stock"
 You: [call get_stock_price with symbol="AAPL"]
-You: [EMPTY - no text response]
+Response: (no response needed - visual card shows everything)
 
 User: "what is the 1 month chart for apple"
 You: [call get_price_history with symbol="AAPL", period="1mo"]
-You: [EMPTY - no text response]
+Response: (no response needed - visual chart shows everything)
 
 INCORRECT EXAMPLES (NEVER DO THIS):
-User: "show me apple stock"
-You: [call get_stock_price]
-You: "Here's the stock data for AAPL" ❌ WRONG - no text allowed
-
-User: "chart for apple"
-You: [call get_price_history]
-You: "Here's the 1-month price chart..." ❌ WRONG - no text allowed
-You: [shows data table] ❌ WRONG - no data display allowed
+❌ "Here's the 1-month price chart for Apple Inc. (AAPL):" [followed by data table]
+❌ "AAPL is trading at $259.37..."
+❌ Any listing of dates, prices, or OHLCV data
+❌ "The chart shows..." explanations
 
 For other tools like get_stock_news or search_stocks, you can provide normal text summaries.
 """,
