@@ -82,7 +82,7 @@ For other tools like get_stock_news or search_stocks, you can provide normal tex
 )
 
 # Define tools
-@pydantic_agent.tool
+@pydantic_agent.tool_plain
 async def get_stock_price(symbol: str) -> dict:
     """Get current stock price and basic information for a symbol."""
     symbol = symbol.upper().strip()
@@ -118,7 +118,7 @@ async def get_stock_price(symbol: str) -> dict:
         "volume": last(quote.get("volume")),
     }
 
-@pydantic_agent.tool
+@pydantic_agent.tool_plain
 async def get_price_history(symbol: str, period: str = "1mo", interval: str = "1d") -> list:
     """Fetch historical price data for a stock symbol. Returns only price data - UI component handles display."""
     symbol = symbol.upper().strip()
@@ -151,7 +151,7 @@ async def get_price_history(symbol: str, period: str = "1mo", interval: str = "1
 
     return candles
 
-@pydantic_agent.tool
+@pydantic_agent.tool_plain
 async def get_stock_news(symbol: str, count: int = 5) -> list:
     """Get recent news articles for a stock symbol."""
     data = await fetch(
@@ -169,7 +169,7 @@ async def get_stock_news(symbol: str, count: int = 5) -> list:
         for n in data.get("news", [])[:count]
     ]
 
-@pydantic_agent.tool
+@pydantic_agent.tool_plain
 async def search_stocks(query: str, count: int = 5) -> list:
     """Search for stock symbols by company name or ticker."""
     data = await fetch(
