@@ -29,6 +29,8 @@ export default function StockCard() {
     ],
     render: ({ args, result, status }) => {
       console.log('Render called:', { args, result, status });
+      console.log('Result keys:', result ? Object.keys(result) : 'null');
+      console.log('Previous close value:', result?.previous_close, result?.previousClose);
 
       if (status !== "complete" || !result) {
         return (
@@ -57,7 +59,7 @@ export default function StockCard() {
         high: result.high || 0,
         low: result.low || 0,
         volume: result.volume || 0,
-        previousClose: result.previous_close || 0,
+        previousClose: result.previousClose || result.previous_close || 0,
       };
 
       return <StockCardDisplay data={stockData} />;
