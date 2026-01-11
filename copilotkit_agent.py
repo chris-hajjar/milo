@@ -101,6 +101,8 @@ async def update_stock_card(
     previousClose: float
 ) -> ToolReturn:
     """Update the stock price card with current market data."""
+    print(f"🎯 update_stock_card called with: ticker={ticker}, price={price}")
+
     # Update state
     ctx.deps.state.ticker = ticker
     ctx.deps.state.price = price
@@ -109,6 +111,8 @@ async def update_stock_card(
     ctx.deps.state.low = low
     ctx.deps.state.volume = volume
     ctx.deps.state.previousClose = previousClose
+
+    print(f"📊 State updated: {ctx.deps.state.model_dump()}")
 
     # Return state snapshot event to sync with frontend
     return ToolReturn(
