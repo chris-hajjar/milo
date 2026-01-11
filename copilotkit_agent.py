@@ -9,9 +9,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from pydantic_ai import Agent as PydanticAgent
 from pydantic_ai.mcp import MCPServerStdio
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
-import json
+from pydantic_ai.ui.ag_ui.app import AGUIApp
 
 # Load OpenAI key from root .env
 load_dotenv()
@@ -76,5 +74,5 @@ OUTPUT
     toolsets=[yahoo_finance_server],
 )
 
-# Create FastAPI app with AG UI support
-app = pydantic_agent.to_ag_ui()
+# Create ASGI app with AG UI support (as per Pydantic AI docs)
+app = AGUIApp(pydantic_agent)
