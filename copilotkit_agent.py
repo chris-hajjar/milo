@@ -95,6 +95,28 @@ def bollinger(values, period=20, std_dev=2):
         "lower": mean - std_dev * std,
     }
 
+def bollinger_bands_series(closes, timestamps, period=20, std_dev=2):
+    """Calculate Bollinger Bands for all data points where possible."""
+    if len(closes) < period:
+        return []
+
+    bands = []
+    for i in range(period - 1, len(closes)):
+        window = closes[i - period + 1:i + 1]
+        mean = sum(window) / period
+        variance = sum((x - mean) ** 2 for x in window) / period
+        std = math.sqrt(variance)
+
+        bands.append({
+            "date": timestamps[i],
+            "upper": mean + std_dev * std,
+            "middle": mean,
+            "lower": mean - std_dev * std,
+            "close": closes[i],
+        })
+
+    return bands
+
 # Create Pydantic AI agent with Yahoo Finance tools
 pydantic_agent = PydanticAgent(
     'openai:gpt-4o',
@@ -268,6 +290,7 @@ async def get_technical_indicators(
 
     result = chart["result"][0]
     q = result["indicators"]["quote"][0]
+    timestamps = result["timestamp"]
 
     closes = [safe_float(c) for c in q["close"] if c is not None]
 
@@ -283,6 +306,20 @@ async def get_technical_indicators(
     if fast and slow:
         macd = fast - slow
 
+    # Get Bollinger Bands series for visualization
+    bollinger_data = bollinger_bands_series(closes, timestamps, bollinger_period, bollinger_std)
+
+    # Get price data for the same range as bollinger bands
+    prices = []
+    if bollinger_data:
+        start_index = len(closes) - len(bollinger_data)
+        for i, timestamp in enumerate(timestamps[start_index:], start=start_index):
+            if i < len(closes):
+                prices.append({
+                    "date": timestamp,
+                    "close": closes[i],
+                })
+
     return {
         "symbol": symbol,
         "interval": interval,
@@ -291,6 +328,8 @@ async def get_technical_indicators(
         "sma": sma_values,
         "macd": macd,
         "bollinger": bollinger(closes, bollinger_period, bollinger_std),
+        "bollinger_data": bollinger_data,
+        "prices": prices,
     }
 
 # Create AG-UI app
