@@ -183,11 +183,25 @@ async def get_price_history(symbol: str, period: str = "1mo", interval: str = "1
             }
         )
 
+    # Calculate summary for agent to use
+    if candles:
+        first_close = candles[0]["close"]
+        last_close = candles[-1]["close"]
+        if first_close and last_close:
+            change_pct = ((last_close - first_close) / first_close) * 100
+            direction = "up" if change_pct >= 0 else "down"
+            summary = f"{symbol} is {direction} {abs(change_pct):.2f}% over the {period} period"
+        else:
+            summary = f"Price history for {symbol} over {period}"
+    else:
+        summary = f"No price data available for {symbol}"
+
     return {
         "symbol": symbol,
         "range": period,
         "interval": interval,
-        "_prices": candles,  # Underscore prefix = UI-only data, not for text output
+        "summary": summary,  # Agent should use this for text output
+        "_prices": candles,  # UI-only data, agent should ignore this
     }
 
 

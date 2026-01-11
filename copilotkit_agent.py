@@ -41,8 +41,8 @@ The following tools have visual UI components that automatically display data:
 - get_price_history: Shows an interactive price chart with all OHLCV data
 
 When you call these tools:
-1. Provide ONLY a brief, natural language summary (1 sentence max)
-2. You MAY calculate percentage changes or trends from the data to make your response more informative
+1. If the tool result has a "summary" field, use that as your response (you may add context like "Here's the chart")
+2. Otherwise, provide ONLY a brief, natural language summary (1 sentence max)
 3. COMPLETELY IGNORE any fields in the tool result that start with underscore (like "_prices", "_data") - these are for UI only
 4. NEVER list out individual prices, dates, or numerical data points from the tool result
 5. NEVER format the tool result as a table or list
