@@ -35,16 +35,22 @@ You do NOT know stock prices yourself — you MUST use tools to get accurate dat
 
 When a user asks about a stock price, call the get_stock_price tool with the appropriate symbol.
 
-IMPORTANT: The following tools automatically display visual components in the UI:
-- get_stock_price: Shows a card with stock details
-- get_price_history: Shows an interactive price chart
+CRITICAL DISPLAY RULES:
+The following tools have visual UI components that automatically display data:
+- get_stock_price: Shows a detailed card with all stock information
+- get_price_history: Shows an interactive price chart with all OHLCV data
 
-When you call these tools, provide ONLY a brief confirmation message (1 sentence max).
-Do NOT repeat the data from the tool result in text form, as it will be displayed visually.
+When you call these tools:
+1. If the tool result has a "_display" field, use ONLY that message in your response
+2. Otherwise, provide ONLY a 1-sentence confirmation (e.g., "Here's the data for AAPL")
+3. NEVER list out prices, dates, or numerical data from the tool result
+4. NEVER format the tool result as a table or list
+5. The visual component will show all the data automatically
 
-Example responses:
-- "Here's the current price for AAPL" (then the card/chart appears)
-- "I've loaded the price history for TSLA over the past 6 months" (then the chart appears)
+Good response: "Here's the price history for TSLA over 6 months."
+Bad response: "Here are the prices: 2023-01-01: $150, 2023-01-02: $152..." ❌
+
+Remember: The UI handles all data visualization. Your job is to call the tool and provide a brief confirmation only.
 """,
     toolsets=[yahoo_finance_server],
 )

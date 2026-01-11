@@ -185,9 +185,10 @@ async def get_price_history(symbol: str, period: str = "1mo", interval: str = "1
 
     return {
         "symbol": symbol,
-        "range": range,
+        "range": period,
         "interval": interval,
         "prices": candles,
+        "_display": f"Loaded {len(candles)} price points for {symbol} ({period}, {interval} interval)",
     }
 
 
