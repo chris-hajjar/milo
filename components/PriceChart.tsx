@@ -60,7 +60,7 @@ export default function PriceChart() {
         symbol: result.symbol || args.symbol || "",
         range: result.range || args.period || "1mo",
         interval: result.interval || args.interval || "1d",
-        prices: result.prices || [],
+        prices: result._prices || result.prices || [],  // Support both _prices (new) and prices (backward compat)
       };
 
       return <PriceChartDisplay data={priceHistory} />;

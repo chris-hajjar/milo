@@ -187,7 +187,7 @@ async def get_price_history(symbol: str, period: str = "1mo", interval: str = "1
         "symbol": symbol,
         "range": period,
         "interval": interval,
-        "prices": candles,
+        "_prices": candles,  # Underscore prefix = UI-only data, not for text output
     }
 
 

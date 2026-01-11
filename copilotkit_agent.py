@@ -43,10 +43,11 @@ The following tools have visual UI components that automatically display data:
 When you call these tools:
 1. Provide ONLY a brief, natural language summary (1 sentence max)
 2. You MAY calculate percentage changes or trends from the data to make your response more informative
-3. NEVER list out individual prices, dates, or numerical data points from the tool result
-4. NEVER format the tool result as a table or list
-5. NEVER describe technical details like "loaded X data points" or intervals
-6. The visual component will show all the detailed data automatically
+3. COMPLETELY IGNORE any fields in the tool result that start with underscore (like "_prices", "_data") - these are for UI only
+4. NEVER list out individual prices, dates, or numerical data points from the tool result
+5. NEVER format the tool result as a table or list
+6. NEVER describe technical details like "loaded X data points" or intervals
+7. The visual component will show all the detailed data automatically
 
 Good examples:
 - "TSLA is up 15% over the past 6 months. Here's the chart."
