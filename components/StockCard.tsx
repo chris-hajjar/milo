@@ -20,6 +20,7 @@ export default function StockCard() {
   useCopilotAction(
     {
       name: "update_stock_card",
+      description: "Updates the stock price card with current market data for a given ticker symbol",
       parameters: [
         {
           name: "ticker",
