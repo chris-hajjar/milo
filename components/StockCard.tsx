@@ -66,6 +66,8 @@ export default function StockCard() {
         },
       ],
       handler: async ({ ticker, price, open, high, low, volume, previousClose }) => {
+        console.log('update_stock_card called with:', { ticker, price, open, high, low, volume, previousClose });
+
         const newStockData: StockData = {
           ticker: ticker || "",
           price: price || 0,
@@ -178,8 +180,16 @@ export default function StockCard() {
 }
 
 function StockCardDisplay({ data }: { data: StockData }) {
-  const priceChange = data.price - data.previousClose;
-  const priceChangePercent = (priceChange / data.previousClose) * 100;
+  // Safety check: ensure all numeric fields are valid numbers
+  const price = typeof data.price === 'number' ? data.price : 0;
+  const previousClose = typeof data.previousClose === 'number' ? data.previousClose : price;
+  const open = typeof data.open === 'number' ? data.open : 0;
+  const high = typeof data.high === 'number' ? data.high : 0;
+  const low = typeof data.low === 'number' ? data.low : 0;
+  const volume = typeof data.volume === 'number' ? data.volume : 0;
+
+  const priceChange = price - previousClose;
+  const priceChangePercent = previousClose > 0 ? (priceChange / previousClose) * 100 : 0;
   const isPriceUp = priceChange >= 0;
   const priceColor = isPriceUp ? "#16a34a" : "#dc2626"; // green-600 : red-600
 
@@ -212,7 +222,7 @@ function StockCardDisplay({ data }: { data: StockData }) {
             fontWeight="bold"
             sx={{ color: priceColor, fontSize: "3.5rem" }}
           >
-            ${data.price.toFixed(2)}
+            ${price.toFixed(2)}
           </Typography>
           <Typography
             variant="body1"
@@ -232,7 +242,7 @@ function StockCardDisplay({ data }: { data: StockData }) {
               Open
             </Typography>
             <Typography variant="body2" fontWeight="medium">
-              ${data.open.toFixed(2)}
+              ${open.toFixed(2)}
             </Typography>
           </Box>
 
@@ -241,7 +251,7 @@ function StockCardDisplay({ data }: { data: StockData }) {
               High
             </Typography>
             <Typography variant="body2" fontWeight="medium">
-              ${data.high.toFixed(2)}
+              ${high.toFixed(2)}
             </Typography>
           </Box>
 
@@ -250,7 +260,7 @@ function StockCardDisplay({ data }: { data: StockData }) {
               Low
             </Typography>
             <Typography variant="body2" fontWeight="medium">
-              ${data.low.toFixed(2)}
+              ${low.toFixed(2)}
             </Typography>
           </Box>
 
@@ -259,7 +269,7 @@ function StockCardDisplay({ data }: { data: StockData }) {
               Volume
             </Typography>
             <Typography variant="body2" fontWeight="medium">
-              {data.volume.toLocaleString()}
+              {volume.toLocaleString()}
             </Typography>
           </Box>
 
@@ -268,7 +278,7 @@ function StockCardDisplay({ data }: { data: StockData }) {
               Previous Close
             </Typography>
             <Typography variant="body2" fontWeight="medium">
-              ${data.previousClose.toFixed(2)}
+              ${previousClose.toFixed(2)}
             </Typography>
           </Box>
         </Box>
