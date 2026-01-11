@@ -125,7 +125,7 @@ async def get_stock_price(symbol: str) -> dict:
     return {
         "symbol": symbol,
         "price": safe_float(meta.get("regularMarketPrice")),
-        "previous_close": safe_float(meta.get("previousClose")),
+        "previous_close": safe_float(meta.get("chartPreviousClose")),
         "currency": meta.get("currency"),
         "exchange": meta.get("exchangeName"),
         "open": last(quote.get("open")),
