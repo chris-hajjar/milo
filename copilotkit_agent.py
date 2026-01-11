@@ -28,7 +28,6 @@ yahoo_finance_server = MCPServerStdio(
 # Create Pydantic AI agent with Yahoo Finance tools
 pydantic_agent = PydanticAgent(
     'openai:gpt-4o-mini',
-    result_type=str,
     system_prompt="""
 You are a financial data assistant that answers questions by calling Yahoo Finance MCP tools.
 
