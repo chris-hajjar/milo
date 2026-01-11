@@ -4,6 +4,7 @@ CopilotKit agent with Yahoo Finance native tools using Pydantic AI.
 Run: uvicorn copilotkit_agent:app --host 127.0.0.1 --port 8000
 """
 import os
+import math
 import httpx
 from pathlib import Path
 from dotenv import load_dotenv
@@ -40,6 +41,59 @@ async def fetch(url, params=None):
         r = await client.get(url, params=params)
         r.raise_for_status()
         return r.json()
+
+# Technical indicator helpers
+def sma(values, period):
+    if len(values) < period:
+        return None
+    return sum(values[-period:]) / period
+
+def ema(values, period):
+    if len(values) < period:
+        return None
+    k = 2 / (period + 1)
+    ema_val = values[0]
+    for v in values[1:]:
+        ema_val = v * k + ema_val * (1 - k)
+    return ema_val
+
+def rsi(values, period=14):
+    if len(values) < period + 1:
+        return None
+
+    gains = []
+    losses = []
+
+    for i in range(1, period + 1):
+        delta = values[-i] - values[-i - 1]
+        if delta >= 0:
+            gains.append(delta)
+        else:
+            losses.append(abs(delta))
+
+    avg_gain = sum(gains) / period if gains else 0
+    avg_loss = sum(losses) / period if losses else 0
+
+    if avg_loss == 0:
+        return 100
+
+    rs = avg_gain / avg_loss
+    return 100 - (100 / (1 + rs))
+
+def bollinger(values, period=20, std_dev=2):
+    if len(values) < period:
+        return None
+
+    window = values[-period:]
+    mean = sum(window) / period
+    variance = sum((x - mean) ** 2 for x in window) / period
+    std = math.sqrt(variance)
+
+    return {
+        "middle": mean,
+        "upper": mean + std_dev * std,
+        "lower": mean - std_dev * std,
+    }
 
 # Create Pydantic AI agent with Yahoo Finance tools
 pydantic_agent = PydanticAgent(
@@ -186,6 +240,58 @@ async def search_stocks(query: str, count: int = 5) -> list:
         }
         for q in data.get("quotes", [])[:count]
     ]
+
+@pydantic_agent.tool_plain
+async def get_technical_indicators(
+    symbol: str,
+    period: str = "1mo",
+    interval: str = "1d",
+    rsi_period: int = 14,
+    sma_periods: list[int] = None,
+    bollinger_period: int = 20,
+    bollinger_std: float = 2.0,
+) -> dict:
+    """Get technical indicators (RSI, SMA, MACD, Bollinger Bands) for a stock symbol."""
+    if sma_periods is None:
+        sma_periods = [20, 50, 200]
+
+    symbol = symbol.upper().strip()
+
+    data = await fetch(
+        f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}",
+        {"range": period, "interval": interval},
+    )
+
+    chart = data.get("chart", {})
+    if "result" not in chart or not chart["result"]:
+        return {"error": "Symbol not found"}
+
+    result = chart["result"][0]
+    q = result["indicators"]["quote"][0]
+
+    closes = [safe_float(c) for c in q["close"] if c is not None]
+
+    if len(closes) < 20:
+        return {"error": "Not enough price data"}
+
+    sma_values = {p: sma(closes, p) for p in sma_periods}
+
+    fast = ema(closes[-26:], 12)
+    slow = ema(closes[-26:], 26)
+
+    macd = None
+    if fast and slow:
+        macd = fast - slow
+
+    return {
+        "symbol": symbol,
+        "interval": interval,
+        "period": period,
+        "rsi": rsi(closes, rsi_period),
+        "sma": sma_values,
+        "macd": macd,
+        "bollinger": bollinger(closes, bollinger_period, bollinger_std),
+    }
 
 # Create AG-UI app
 app = AGUIApp(pydantic_agent)
