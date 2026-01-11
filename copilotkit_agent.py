@@ -7,9 +7,12 @@ import os
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
+from fastapi import FastAPI
+from starlette.requests import Request
+from starlette.responses import Response
 from pydantic_ai import Agent as PydanticAgent
 from pydantic_ai.mcp import MCPServerStdio
-from pydantic_ai.ui.ag_ui.app import AGUIApp
+from pydantic_ai.ui.ag_ui import AGUIAdapter
 
 # Load OpenAI key from root .env
 load_dotenv()
@@ -74,5 +77,10 @@ OUTPUT
     toolsets=[yahoo_finance_server],
 )
 
-# Create ASGI app with AG UI support (as per Pydantic AI docs)
-app = AGUIApp(pydantic_agent)
+# Create FastAPI app and handle AG-UI requests dynamically
+app = FastAPI()
+
+@app.post('/')
+async def run_agent(request: Request) -> Response:
+    # This method extracts frontend tools from each request's RunAgentInput
+    return await AGUIAdapter.dispatch_request(request, agent=pydantic_agent)
