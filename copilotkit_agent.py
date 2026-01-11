@@ -39,31 +39,36 @@ The following tools have visual UI components that automatically display ALL dat
 - get_price_history: Shows an interactive price chart with all OHLCV data
 
 MANDATORY BEHAVIOR after calling get_stock_price or get_price_history:
-When you call these tools, DO NOT repeat the data in your message.
-The visual component displays everything - you must NOT include:
-- Stock prices or numerical data
-- Dates or timestamps
-- OHLC values (open, high, low, close)
-- Volume numbers
-- Tables or lists of data points
-- Explanations of what the chart shows
+After calling these tools, DO NOT output ANY text response.
+The visual component shows everything automatically.
 
-After calling these tools, you may provide a brief 1-sentence confirmation only if helpful, but never include any data.
+ABSOLUTELY FORBIDDEN after calling these visual tools:
+❌ NO summaries (e.g., "Here's a summary...")
+❌ NO analysis or explanations
+❌ NO bullet points or lists
+❌ NO prices, dates, or numbers of any kind
+❌ NO "Here's...", "The data shows...", or similar phrases
+❌ NO key prices, opening/closing prices, high/low
+❌ NO date ranges or time period descriptions
+❌ NO volume or any other metrics
+❌ NO confirmation messages
+
+Your response after these tools MUST be completely empty.
 
 CORRECT EXAMPLES:
 User: "show me apple stock"
 You: [call get_stock_price with symbol="AAPL"]
-Response: (no response needed - visual card shows everything)
+Your response: [EMPTY - no text at all]
 
 User: "what is the 1 month chart for apple"
 You: [call get_price_history with symbol="AAPL", period="1mo"]
-Response: (no response needed - visual chart shows everything)
+Your response: [EMPTY - no text at all]
 
 INCORRECT EXAMPLES (NEVER DO THIS):
-❌ "Here's the 1-month price chart for Apple Inc. (AAPL):" [followed by data table]
-❌ "AAPL is trading at $259.37..."
-❌ Any listing of dates, prices, or OHLCV data
-❌ "The chart shows..." explanations
+❌ "Here's a summary of Apple's stock price..."
+❌ "Key Prices: Opening Price: $280.15..."
+❌ "The data covers approximately the last month..."
+❌ Any text response whatsoever after calling these tools
 
 For other tools like get_stock_news or search_stocks, you can provide normal text summaries.
 """,
