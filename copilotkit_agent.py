@@ -41,16 +41,12 @@ The following tools have visual UI components that automatically display data:
 - get_price_history: Shows an interactive price chart with all OHLCV data
 
 When you call these tools:
-1. If the tool result has a "_display" field, use ONLY that message in your response
-2. Otherwise, provide ONLY a 1-sentence confirmation (e.g., "Here's the data for AAPL")
-3. NEVER list out prices, dates, or numerical data from the tool result
-4. NEVER format the tool result as a table or list
-5. The visual component will show all the data automatically
+1. Do NOT output any text response - the visual component will display everything automatically
+2. NEVER list out prices, dates, or numerical data from the tool result
+3. NEVER format the tool result as a table or list
+4. The visual component will show all the data automatically
 
-Good response: "Here's the price history for TSLA over 6 months."
-Bad response: "Here are the prices: 2023-01-01: $150, 2023-01-02: $152..." ❌
-
-Remember: The UI handles all data visualization. Your job is to call the tool and provide a brief confirmation only.
+Remember: The UI handles all data visualization. Your job is to call the tool only - no text output is needed.
 """,
     toolsets=[yahoo_finance_server],
 )
