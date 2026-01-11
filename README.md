@@ -198,6 +198,7 @@ The agent has access to these Yahoo Finance tools:
 ### Text Tools (Normal Output)
 - `get_stock_news` - Recent news articles
 - `search_stocks` - Search by company name or ticker
+- `get_technical_indicators` - RSI, SMA, MACD, Bollinger Bands
 
 ---
 
@@ -211,6 +212,7 @@ The agent has access to these Yahoo Finance tools:
 **Text Tools:**
 - "Get me news about Tesla" (shows text list)
 - "Search for Nvidia" (shows text results)
+- "Show technical indicators for NVDA" (shows RSI, SMA, MACD, Bollinger)
 
 ---
 
