@@ -67,9 +67,10 @@ ERROR HANDLING
 - Ask the user for clarification
 
 OUTPUT
-- After getting stock data, use any available UI update tools to display the information
-- Summarize results in plain English
-- Include ticker, price, and currency
+- CRITICAL: After successfully calling get_stock_price, you MUST immediately call the update_stock_card tool with ALL the stock data fields
+- The update_stock_card tool requires: ticker, price, open, high, low, volume, previousClose
+- Extract these exact fields from the get_stock_price response: regularMarketPrice, regularMarketOpen, regularMarketDayHigh, regularMarketDayLow, regularMarketVolume, regularMarketPreviousClose
+- Only after calling update_stock_card, then provide a brief text summary
 - Never show raw JSON unless explicitly asked
 """,
     toolsets=[yahoo_finance_server],
