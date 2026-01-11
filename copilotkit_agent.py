@@ -95,6 +95,28 @@ def bollinger(values, period=20, std_dev=2):
         "lower": mean - std_dev * std,
     }
 
+def bollinger_bands_series(closes, timestamps, period=20, std_dev=2):
+    """Calculate Bollinger Bands for all data points where possible."""
+    if len(closes) < period:
+        return []
+
+    bands = []
+    for i in range(period - 1, len(closes)):
+        window = closes[i - period + 1:i + 1]
+        mean = sum(window) / period
+        variance = sum((x - mean) ** 2 for x in window) / period
+        std = math.sqrt(variance)
+
+        bands.append({
+            "date": timestamps[i],
+            "upper": mean + std_dev * std,
+            "middle": mean,
+            "lower": mean - std_dev * std,
+            "close": closes[i],
+        })
+
+    return bands
+
 # Create Pydantic AI agent with Yahoo Finance tools
 pydantic_agent = PydanticAgent(
     'openai:gpt-4o',
@@ -107,8 +129,9 @@ CRITICAL: VISUAL-ONLY TOOLS
 The following tools have visual UI components that automatically display ALL data:
 - get_stock_price: Shows a detailed card with all stock information
 - get_price_history: Shows an interactive price chart with all OHLCV data
+- get_technical_indicators: Shows an interactive chart with Bollinger Bands and technical indicators
 
-MANDATORY: After calling get_stock_price or get_price_history, output NO text.
+MANDATORY: After calling get_stock_price, get_price_history, or get_technical_indicators, output NO text.
 The visual component displays everything automatically.
 
 FORBIDDEN after calling these tools:
@@ -118,6 +141,7 @@ FORBIDDEN after calling these tools:
 - Phrases like "Here's...", "The data shows..."
 - Date ranges, time periods, or metrics
 - Confirmation messages
+- Technical indicator values or interpretations
 
 Your response must be completely empty.
 
@@ -126,9 +150,14 @@ User: "show me apple stock"
 You: [call get_stock_price with symbol="AAPL"]
 Your response: [EMPTY]
 
+User: "show me bollinger bands for TSLA"
+You: [call get_technical_indicators with symbol="TSLA"]
+Your response: [EMPTY]
+
 INCORRECT:
 "Here's a summary of Apple's stock price..."
 "Key Prices: Opening Price: $280.15..."
+"The Bollinger Bands show that the stock is overbought..."
 Any text response after calling these tools
 
 For other tools like get_stock_news or search_stocks, you can provide normal text summaries.
@@ -268,6 +297,7 @@ async def get_technical_indicators(
 
     result = chart["result"][0]
     q = result["indicators"]["quote"][0]
+    timestamps = result["timestamp"]
 
     closes = [safe_float(c) for c in q["close"] if c is not None]
 
@@ -283,6 +313,20 @@ async def get_technical_indicators(
     if fast and slow:
         macd = fast - slow
 
+    # Get Bollinger Bands series for visualization
+    bollinger_data = bollinger_bands_series(closes, timestamps, bollinger_period, bollinger_std)
+
+    # Get price data for the same range as bollinger bands
+    prices = []
+    if bollinger_data:
+        start_index = len(closes) - len(bollinger_data)
+        for i, timestamp in enumerate(timestamps[start_index:], start=start_index):
+            if i < len(closes):
+                prices.append({
+                    "date": timestamp,
+                    "close": closes[i],
+                })
+
     return {
         "symbol": symbol,
         "interval": interval,
@@ -291,6 +335,8 @@ async def get_technical_indicators(
         "sma": sma_values,
         "macd": macd,
         "bollinger": bollinger(closes, bollinger_period, bollinger_std),
+        "bollinger_data": bollinger_data,
+        "prices": prices,
     }
 
 # Create AG-UI app
