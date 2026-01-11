@@ -52,12 +52,12 @@ export default function StockCard() {
 
       const stockData: StockData = {
         ticker: args.symbol || "",
-        price: result.regularMarketPrice || 0,
-        open: result.regularMarketOpen || 0,
-        high: result.regularMarketDayHigh || 0,
-        low: result.regularMarketDayLow || 0,
-        volume: result.regularMarketVolume || 0,
-        previousClose: result.regularMarketPreviousClose || 0,
+        price: result.price || 0,
+        open: result.open || 0,
+        high: result.high || 0,
+        low: result.low || 0,
+        volume: result.volume || 0,
+        previousClose: result.previous_close || 0,
       };
 
       return <StockCardDisplay data={stockData} />;
