@@ -1,5 +1,5 @@
 "use client";
-import { useCopilotAction } from "@copilotkit/react-core";
+import { useRenderToolCall } from "@copilotkit/react-core";
 import { Card, CardContent, Typography, Box } from "@mui/material";
 import { LineChart } from "@mui/x-charts/LineChart";
 
@@ -20,30 +20,8 @@ interface PriceHistory {
 }
 
 export default function PriceChart() {
-  useCopilotAction({
+  useRenderToolCall({
     name: "get_price_history",
-    available: "disabled", // Only renders backend tool results
-    followUp: false, // Suppress agent text output - only show visual component
-    parameters: [
-      {
-        name: "symbol",
-        type: "string",
-        required: true,
-        description: "Stock ticker symbol",
-      },
-      {
-        name: "period",
-        type: "string",
-        required: false,
-        description: "Time period (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max)",
-      },
-      {
-        name: "interval",
-        type: "string",
-        required: false,
-        description: "Data interval (1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo)",
-      },
-    ],
     render: ({ args, result, status }) => {
       if (status !== "complete" || !result) {
         return (
