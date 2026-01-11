@@ -19,6 +19,7 @@ export default function StockCard() {
   useCopilotAction({
     name: "get_stock_price",
     available: "disabled", // Only renders backend tool results
+    followUp: false, // Suppress agent text output - only show visual component
     parameters: [
       {
         name: "symbol",

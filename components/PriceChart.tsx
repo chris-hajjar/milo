@@ -23,6 +23,7 @@ export default function PriceChart() {
   useCopilotAction({
     name: "get_price_history",
     available: "disabled", // Only renders backend tool results
+    followUp: false, // Suppress agent text output - only show visual component
     parameters: [
       {
         name: "symbol",
