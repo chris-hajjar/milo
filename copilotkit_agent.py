@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """
-CopilotKit agent with Yahoo Finance MCP tools.
+CopilotKit agent with Yahoo Finance MCP tools using Pydantic AI.
 Run: uvicorn copilotkit_agent:app --host 127.0.0.1 --port 8000
 """
 import os
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
-from pydantic_ai import Agent
+from pydantic_ai import Agent as PydanticAgent
 from pydantic_ai.mcp import MCPServerStdio
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+import json
 
 # Load OpenAI key from root .env
 load_dotenv()
@@ -24,8 +27,8 @@ yahoo_finance_server = MCPServerStdio(
     timeout=30,
 )
 
-# Create agent with financial assistant prompt
-agent = Agent(
+# Create Pydantic AI agent with financial assistant prompt
+pydantic_agent = PydanticAgent(
     'openai:gpt-4o-mini',
     system_prompt="""
 You are a financial data assistant that answers questions by calling Yahoo Finance MCP tools.
@@ -71,5 +74,5 @@ OUTPUT
     toolsets=[yahoo_finance_server],
 )
 
-# Convert to CopilotKit AG UI runtime
-app = agent.to_ag_ui()
+# Create FastAPI app with AG UI support
+app = pydantic_agent.to_ag_ui()
