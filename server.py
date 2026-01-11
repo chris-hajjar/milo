@@ -166,7 +166,8 @@ async def get_stock_news(symbol: str, count: int = 5) -> list:
 
 
 @mcp.tool(output_schema=None)
-async def get_price_history(symbol: str, period: str = "1mo", interval: str = "1d") -> dict:
+async def get_price_history(symbol: str, period: str = "1mo", interval: str = "1d") -> list:
+    """Fetch historical price data for a stock symbol. Returns only price data - UI component handles display."""
     symbol = symbol.upper().strip()
 
     data = await fetch(
@@ -176,7 +177,7 @@ async def get_price_history(symbol: str, period: str = "1mo", interval: str = "1
 
     chart = data.get("chart", {})
     if "result" not in chart or not chart["result"]:
-        return {"error": "Symbol not found"}
+        return []
 
     result = chart["result"][0]
     ts = result["timestamp"]
@@ -195,12 +196,7 @@ async def get_price_history(symbol: str, period: str = "1mo", interval: str = "1
             }
         )
 
-    return {
-        "symbol": symbol,
-        "range": period,
-        "interval": interval,
-        "prices": candles,
-    }
+    return candles
 
 
 @mcp.tool()

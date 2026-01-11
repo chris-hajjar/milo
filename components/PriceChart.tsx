@@ -35,11 +35,12 @@ export default function PriceChart() {
         );
       }
 
+      // Tool returns just price array - get metadata from args
       const priceHistory: PriceHistory = {
-        symbol: result.symbol || args.symbol || "",
-        range: result.range || args.period || "1mo",
-        interval: result.interval || args.interval || "1d",
-        prices: result.prices || [],
+        symbol: args.symbol || "",
+        range: args.period || "1mo",
+        interval: args.interval || "1d",
+        prices: Array.isArray(result) ? result : [],
       };
 
       return <PriceChartDisplay data={priceHistory} />;
