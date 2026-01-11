@@ -183,12 +183,24 @@ async def get_price_history(symbol: str, period: str = "1mo", interval: str = "1
             }
         )
 
+    # Calculate summary statistics
+    valid_closes = [c["close"] for c in candles if c["close"] is not None]
+    if valid_closes:
+        first_price = valid_closes[0]
+        last_price = valid_closes[-1]
+        price_change = last_price - first_price
+        price_change_percent = (price_change / first_price) * 100
+        is_up = price_change >= 0
+    else:
+        first_price = last_price = price_change = price_change_percent = None
+        is_up = False
+
     return {
         "symbol": symbol,
         "range": period,
         "interval": interval,
         "prices": candles,
-        "_display": f"Loaded {len(candles)} price points for {symbol} ({period}, {interval} interval)",
+        "_display": f"{symbol} is {'up' if is_up else 'down'} {abs(price_change_percent):.2f}% over {period}. Here's the chart",
     }
 
 

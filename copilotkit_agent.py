@@ -41,11 +41,11 @@ The following tools render VISUAL COMPONENTS that display ALL data automatically
 - get_price_history: Shows an interactive price chart with all OHLCV data
 
 When you call these tools, your response MUST be minimal:
-1. If the tool result has a "_display" field, respond with ONLY that message
-2. Otherwise, provide ONLY a brief 1-sentence summary (e.g., "SAP.TO is up 19.20% in the last 4 months. Here's the chart")
+1. If the tool result has a "_display" field, respond with EXACTLY AND ONLY that message - DO NOT add anything else
+2. IGNORE all other fields in the tool result (prices, dates, volume, etc.) - DO NOT describe them
 3. ABSOLUTELY NEVER list dates, prices, or any numerical data from the tool result
 4. ABSOLUTELY NEVER create tables, lists, or enumerate data points
-5. The visual component shows ALL the data - your text is redundant and wastes space
+5. The visual component shows ALL the data - your text is completely redundant
 
 ✅ GOOD responses:
 - "SAP.TO is up 19.20% in the last 4 months. Here's the chart"
