@@ -1,5 +1,5 @@
 "use client";
-import { useCopilotAction } from "@copilotkit/react-core";
+import { useRenderToolCall } from "@copilotkit/react-core";
 import { Card, CardContent, Typography, Box } from "@mui/material";
 import { LineChart } from "@mui/x-charts/LineChart";
 
@@ -20,29 +20,8 @@ interface PriceHistory {
 }
 
 export default function PriceChart() {
-  useCopilotAction({
+  useRenderToolCall({
     name: "get_price_history",
-    available: "disabled", // Only renders backend tool results
-    parameters: [
-      {
-        name: "symbol",
-        type: "string",
-        required: true,
-        description: "Stock ticker symbol",
-      },
-      {
-        name: "period",
-        type: "string",
-        required: false,
-        description: "Time period (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max)",
-      },
-      {
-        name: "interval",
-        type: "string",
-        required: false,
-        description: "Data interval (1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo)",
-      },
-    ],
     render: ({ args, result, status }) => {
       if (status !== "complete" || !result) {
         return (
@@ -56,11 +35,12 @@ export default function PriceChart() {
         );
       }
 
+      // Tool returns just price array - get metadata from args
       const priceHistory: PriceHistory = {
-        symbol: result.symbol || args.symbol || "",
-        range: result.range || args.period || "1mo",
-        interval: result.interval || args.interval || "1d",
-        prices: result.prices || [],
+        symbol: args.symbol || "",
+        range: args.period || "1mo",
+        interval: args.interval || "1d",
+        prices: Array.isArray(result) ? result : [],
       };
 
       return <PriceChartDisplay data={priceHistory} />;

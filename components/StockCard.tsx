@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useCopilotAction } from "@copilotkit/react-core";
+import { useRenderToolCall } from "@copilotkit/react-core";
 import { Card, CardContent, Typography, Box, Divider } from "@mui/material";
 
 interface StockData {
@@ -16,17 +16,8 @@ interface StockData {
 
 export default function StockCard() {
   // Render backend tool results with Generative UI pattern
-  useCopilotAction({
+  useRenderToolCall({
     name: "get_stock_price",
-    available: "disabled", // Only renders backend tool results
-    parameters: [
-      {
-        name: "symbol",
-        type: "string",
-        required: true,
-        description: "Stock ticker symbol",
-      },
-    ],
     render: ({ args, result, status }) => {
       console.log('Render called:', { args, result, status });
       console.log('Result keys:', result ? Object.keys(result) : 'null');
