@@ -122,10 +122,22 @@ async def get_stock_price(symbol: str) -> dict:
     meta = result["meta"]
     quote = result["indicators"]["quote"][0]
 
+    # Try multiple possible keys for previous close
+    previous_close = safe_float(meta.get("previousClose"))
+    if previous_close is None:
+        previous_close = safe_float(meta.get("chartPreviousClose"))
+    if previous_close is None:
+        previous_close = safe_float(meta.get("regularMarketPreviousClose"))
+
+    # Debug: Log what keys are available in meta
+    import sys
+    print(f"DEBUG: Meta keys: {list(meta.keys())}", file=sys.stderr)
+    print(f"DEBUG: Previous close value: {previous_close}", file=sys.stderr)
+
     return {
         "symbol": symbol,
         "price": safe_float(meta.get("regularMarketPrice")),
-        "previous_close": safe_float(meta.get("previousClose")),
+        "previous_close": previous_close,
         "currency": meta.get("currency"),
         "exchange": meta.get("exchangeName"),
         "open": last(quote.get("open")),
@@ -185,9 +197,10 @@ async def get_price_history(symbol: str, period: str = "1mo", interval: str = "1
 
     return {
         "symbol": symbol,
-        "range": range,
+        "range": period,
         "interval": interval,
         "prices": candles,
+        "_display": f"Loaded {len(candles)} price points for {symbol} ({period}, {interval} interval)",
     }
 
 
