@@ -80,6 +80,13 @@ function BollingerBandsDisplay({ data }: { data: BollingerBandsData }) {
   const lowerBand = data.bands.map((b) => b.lower);
   const closePrices = data.bands.map((b) => b.close);
 
+  // Calculate min/max for proper chart scaling with padding
+  const allValues = [...upperBand, ...middleBand, ...lowerBand, ...closePrices];
+  const minValue = Math.min(...allValues);
+  const maxValue = Math.max(...allValues);
+  const range = maxValue - minValue;
+  const padding = range * 0.05; // 5% padding
+
   // Get current values (last point)
   const currentClose = closePrices[closePrices.length - 1];
   const currentUpper = upperBand[upperBand.length - 1];
@@ -163,6 +170,8 @@ function BollingerBandsDisplay({ data }: { data: BollingerBandsData }) {
             ]}
             yAxis={[
               {
+                min: minValue - padding,
+                max: maxValue + padding,
                 valueFormatter: (value: number) => `$${value.toFixed(2)}`,
               },
             ]}
@@ -170,26 +179,26 @@ function BollingerBandsDisplay({ data }: { data: BollingerBandsData }) {
               {
                 data: upperBand,
                 label: "Upper Band",
-                color: "#94a3b8",
-                showMark: false,
-                curve: "linear",
-                strokeWidth: 1.5,
-              },
-              {
-                data: middleBand,
-                label: "Middle Band (SMA)",
-                color: "#475569",
+                color: "#3b82f6",
                 showMark: false,
                 curve: "linear",
                 strokeWidth: 2,
               },
               {
-                data: lowerBand,
-                label: "Lower Band",
-                color: "#94a3b8",
+                data: middleBand,
+                label: "Middle Band (SMA)",
+                color: "#f59e0b",
                 showMark: false,
                 curve: "linear",
-                strokeWidth: 1.5,
+                strokeWidth: 2.5,
+              },
+              {
+                data: lowerBand,
+                label: "Lower Band",
+                color: "#8b5cf6",
+                showMark: false,
+                curve: "linear",
+                strokeWidth: 2,
               },
               {
                 data: closePrices,
@@ -197,7 +206,7 @@ function BollingerBandsDisplay({ data }: { data: BollingerBandsData }) {
                 color: statusColor,
                 showMark: false,
                 curve: "linear",
-                strokeWidth: 2.5,
+                strokeWidth: 3,
                 area: false,
               },
             ]}
@@ -212,10 +221,6 @@ function BollingerBandsDisplay({ data }: { data: BollingerBandsData }) {
               },
             }}
             sx={{
-              "& .MuiLineElement-root": {
-                strokeWidth: 2,
-              },
-              // Add shaded area between bands using background
               "& .MuiChartsAxis-root": {
                 strokeWidth: 0.5,
               },
