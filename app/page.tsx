@@ -4,6 +4,7 @@ import { CopilotKit } from "@copilotkit/react-core";
 import { CopilotChat } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
 import StockCard from "@/components/StockCard";
+import PriceChart from "@/components/PriceChart";
 
 export default function Home() {
   return (
@@ -12,6 +13,7 @@ export default function Home() {
       agent="copilotkit_agent"
     >
       <StockCard />
+      <PriceChart />
       <CopilotChat
         instructions="You are a financial assistant that helps users get stock market information, news, and technical indicators using Yahoo Finance data."
         labels={{
