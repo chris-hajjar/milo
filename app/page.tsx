@@ -7,7 +7,7 @@ import StockCard from "@/components/StockCard";
 
 export default function Home() {
   return (
-    <CopilotKit runtimeUrl="/api/copilotkit">
+    <CopilotKit runtimeUrl="/api/copilotkit" agent="yahoo_finance_agent">
       <div className="flex h-screen">
         <main className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
           <StockCard />
