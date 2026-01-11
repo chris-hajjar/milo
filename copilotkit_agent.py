@@ -87,4 +87,4 @@ OUTPUT
 )
 
 # Create FastAPI app with AG UI support
-app = pydantic_agent.to_ag_ui()
+app = pydantic_agent.to_ag_ui(agent_name="copilotkit_agent")
