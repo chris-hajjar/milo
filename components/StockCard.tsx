@@ -81,7 +81,11 @@ export default function StockCard() {
         return `Stock card updated with ${ticker} data!`;
       },
       render: ({ args }) => {
-        if (!args.ticker) return <></>;
+        console.log('Render called with args:', args);
+        if (!args.ticker) {
+          console.log('No ticker in args, returning empty');
+          return <></>;
+        }
         return <StockCardDisplay data={args as StockData} />;
       },
     },
