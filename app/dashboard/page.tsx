@@ -3,9 +3,9 @@
 import { CopilotKit } from "@copilotkit/react-core";
 import { CopilotSidebar } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
-import StockCard from "@/components/StockCard";
-import PriceChart from "@/components/PriceChart";
-import BollingerBandsChart from "@/components/BollingerBandsChart";
+import DashboardStockCard from "@/components/dashboard/DashboardStockCard";
+import DashboardPriceChart from "@/components/dashboard/DashboardPriceChart";
+import DashboardBollingerBandsChart from "@/components/dashboard/DashboardBollingerBandsChart";
 import { Box, Container } from "@mui/material";
 
 export default function Dashboard() {
@@ -17,6 +17,7 @@ export default function Dashboard() {
       <CopilotSidebar
         defaultOpen={true}
         clickOutsideToClose={false}
+        side="left"
         instructions="You are a financial assistant that helps users get stock market information, news, and technical indicators using Yahoo Finance data."
         labels={{
           initial: "What stock would you like to know about?",
@@ -39,13 +40,13 @@ export default function Dashboard() {
                 marginBottom: 3,
               }}
             >
-              <StockCard />
-              <PriceChart />
+              <DashboardStockCard />
+              <DashboardPriceChart />
             </Box>
 
             {/* Bottom Row: BollingerBandsChart (full width) */}
             <Box>
-              <BollingerBandsChart />
+              <DashboardBollingerBandsChart />
             </Box>
           </Container>
         </Box>
