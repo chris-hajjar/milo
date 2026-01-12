@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRenderToolCall } from "@copilotkit/react-core";
-import { Card, CardContent, Typography, Box, Divider } from "@mui/material";
+import { Card, CardContent, Typography, Box, Divider, Chip } from "@mui/material";
 
 interface StockData {
   ticker: string;
@@ -86,16 +86,20 @@ function StockCardDisplay({ data }: { data: StockData }) {
       }}
     >
       <CardContent sx={{ p: 4 }}>
-        {/* Ticker Symbol */}
-        <Typography
-          variant="h5"
-          fontWeight="bold"
-          color="text.secondary"
-          gutterBottom
-          sx={{ textAlign: "center", mb: 3 }}
-        >
-          {data.ticker}
-        </Typography>
+        {/* Ticker Label */}
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+          <Chip
+            label={data.ticker}
+            sx={{
+              backgroundColor: "#2196f3",
+              color: "white",
+              fontWeight: "bold",
+              fontSize: "1rem",
+              padding: "4px 8px",
+              height: "auto",
+            }}
+          />
+        </Box>
 
         {/* Current Price - Large and Bold */}
         <Box sx={{ textAlign: "center", mb: 1 }}>

@@ -1,6 +1,6 @@
 "use client";
 import { useRenderToolCall } from "@copilotkit/react-core";
-import { Card, CardContent, Typography, Box } from "@mui/material";
+import { Card, CardContent, Typography, Box, Chip } from "@mui/material";
 import { LineChart } from "@mui/x-charts/LineChart";
 
 interface CandleData {
@@ -115,11 +115,26 @@ function BollingerBandsDisplay({ data }: { data: BollingerBandsData }) {
   return (
     <Card sx={{ maxWidth: 900, width: "100%", mx: 4, boxShadow: 6, borderRadius: 3 }}>
       <CardContent sx={{ p: 4 }}>
+        {/* Ticker Label */}
+        <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+          <Chip
+            label={data.symbol}
+            sx={{
+              backgroundColor: "#9c27b0",
+              color: "white",
+              fontWeight: "bold",
+              fontSize: "1rem",
+              padding: "4px 8px",
+              height: "auto",
+            }}
+          />
+        </Box>
+
         {/* Header */}
         <Box sx={{ mb: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-            <Typography variant="h5" fontWeight="bold">
-              {data.symbol} - Bollinger Bands
+            <Typography variant="h6" fontWeight="bold" color="text.secondary">
+              Bollinger Bands
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {data.period} • {data.interval}
