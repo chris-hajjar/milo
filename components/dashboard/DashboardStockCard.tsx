@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRenderToolCall } from "@copilotkit/react-core";
 import { Card, CardContent, Typography, Box, Divider, Chip } from "@mui/material";
 
@@ -14,82 +14,77 @@ interface StockData {
   previousClose: number;
 }
 
-export default function StockCard() {
-  // Render backend tool results with Generative UI pattern
+export default function DashboardStockCard() {
+  const [stockData, setStockData] = useState<StockData | null>(null);
+
+  // Listen for tool calls and capture data
   useRenderToolCall({
     name: "get_stock_price",
     render: ({ args, result, status }) => {
-      console.log('Render called:', { args, result, status });
-      console.log('Result keys:', result ? Object.keys(result) : 'null');
-      console.log('Previous close value:', result?.previous_close, result?.previousClose);
-
-      if (status !== "complete" || !result) {
-        return (
-          <Card
-            sx={{
-              maxWidth: 500,
-              width: "100%",
-              mx: 4,
-              boxShadow: 4,
-              borderRadius: 3,
-            }}
-          >
-            <CardContent sx={{ textAlign: "center", py: 6 }}>
-              <Typography variant="h5" fontWeight="bold">
-                {status === "executing" ? "⚙️ Loading stock data..." : "Ask about a stock!"}
-              </Typography>
-            </CardContent>
-          </Card>
-        );
+      if (status === "complete" && result) {
+        const data: StockData = {
+          ticker: args.symbol || "",
+          price: result.price || 0,
+          open: result.open || 0,
+          high: result.high || 0,
+          low: result.low || 0,
+          volume: result.volume || 0,
+          previousClose: result.previousClose || result.previous_close || 0,
+        };
+        setStockData(data);
       }
-
-      const stockData: StockData = {
-        ticker: args.symbol || "",
-        price: result.price || 0,
-        open: result.open || 0,
-        high: result.high || 0,
-        low: result.low || 0,
-        volume: result.volume || 0,
-        previousClose: result.previousClose || result.previous_close || 0,
-      };
-
-      return <StockCardDisplay data={stockData} />;
+      // Return null so nothing renders in the chat
+      return null;
     },
   });
 
-  // Return null when no stock data - card only appears when tool renders
-  return null;
-}
+  // Always render the card in the dashboard
+  if (!stockData) {
+    return (
+      <Card
+        sx={{
+          width: "100%",
+          boxShadow: 4,
+          borderRadius: 3,
+          height: "100%",
+        }}
+      >
+        <CardContent sx={{ textAlign: "center", py: 6 }}>
+          <Typography variant="h5" fontWeight="bold" color="text.secondary">
+            Ask about a stock!
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  }
 
-function StockCardDisplay({ data }: { data: StockData }) {
-  // Safety check: ensure all numeric fields are valid numbers
-  const price = typeof data.price === 'number' ? data.price : 0;
-  const previousClose = typeof data.previousClose === 'number' ? data.previousClose : price;
-  const open = typeof data.open === 'number' ? data.open : 0;
-  const high = typeof data.high === 'number' ? data.high : 0;
-  const low = typeof data.low === 'number' ? data.low : 0;
-  const volume = typeof data.volume === 'number' ? data.volume : 0;
+  // Render with data
+  const price = typeof stockData.price === 'number' ? stockData.price : 0;
+  const previousClose = typeof stockData.previousClose === 'number' ? stockData.previousClose : price;
+  const open = typeof stockData.open === 'number' ? stockData.open : 0;
+  const high = typeof stockData.high === 'number' ? stockData.high : 0;
+  const low = typeof stockData.low === 'number' ? stockData.low : 0;
+  const volume = typeof stockData.volume === 'number' ? stockData.volume : 0;
 
   const priceChange = price - previousClose;
   const priceChangePercent = previousClose > 0 ? (priceChange / previousClose) * 100 : 0;
   const isPriceUp = priceChange >= 0;
-  const priceColor = isPriceUp ? "#16a34a" : "#dc2626"; // green-600 : red-600
+  const priceColor = isPriceUp ? "#16a34a" : "#dc2626";
 
   return (
     <Card
       sx={{
-        maxWidth: 500,
         width: "100%",
-        mx: 4,
         boxShadow: 6,
         borderRadius: 3,
+        height: "100%",
       }}
     >
       <CardContent sx={{ p: 4 }}>
         {/* Ticker Label */}
         <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
           <Chip
-            label={data.ticker}
+            label={stockData.ticker}
             sx={{
               backgroundColor: "#2196f3",
               color: "white",

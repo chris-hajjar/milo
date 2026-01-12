@@ -1,4 +1,6 @@
 "use client";
+
+import React, { useState } from "react";
 import { useRenderToolCall } from "@copilotkit/react-core";
 import { Card, CardContent, Typography, Box, Chip } from "@mui/material";
 import { LineChart } from "@mui/x-charts/LineChart";
@@ -19,44 +21,46 @@ interface PriceHistory {
   prices: CandleData[];
 }
 
-export default function PriceChart() {
+export default function DashboardPriceChart() {
+  const [priceHistory, setPriceHistory] = useState<PriceHistory | null>(null);
+
+  // Listen for tool calls and capture data
   useRenderToolCall({
     name: "get_price_history",
     render: ({ args, result, status }) => {
-      if (status !== "complete" || !result) {
-        return (
-          <Card sx={{ maxWidth: 900, width: "100%", mx: 4, boxShadow: 4, borderRadius: 3 }}>
-            <CardContent sx={{ textAlign: "center", py: 6 }}>
-              <Typography variant="h5" fontWeight="bold">
-                {status === "executing" ? "📊 Loading price history..." : "Ask about price history!"}
-              </Typography>
-            </CardContent>
-          </Card>
-        );
+      if (status === "complete" && result) {
+        const data: PriceHistory = {
+          symbol: args.symbol || "",
+          range: args.period || "1mo",
+          interval: args.interval || "1d",
+          prices: Array.isArray(result) ? result : [],
+        };
+        setPriceHistory(data);
       }
-
-      // Tool returns just price array - get metadata from args
-      const priceHistory: PriceHistory = {
-        symbol: args.symbol || "",
-        range: args.period || "1mo",
-        interval: args.interval || "1d",
-        prices: Array.isArray(result) ? result : [],
-      };
-
-      return <PriceChartDisplay data={priceHistory} />;
+      // Return null so nothing renders in the chat
+      return null;
     },
   });
 
-  return null; // Chart only appears when tool renders
-}
+  // Always render the card in the dashboard
+  if (!priceHistory) {
+    return (
+      <Card sx={{ width: "100%", boxShadow: 4, borderRadius: 3, height: "100%" }}>
+        <CardContent sx={{ textAlign: "center", py: 6 }}>
+          <Typography variant="h5" fontWeight="bold" color="text.secondary">
+            Ask about price history!
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  }
 
-function PriceChartDisplay({ data }: { data: PriceHistory }) {
   // Filter out null values
-  const validPrices = data.prices.filter((p) => p.close !== null && p.date !== null);
+  const validPrices = priceHistory.prices.filter((p) => p.close !== null && p.date !== null);
 
   if (validPrices.length === 0) {
     return (
-      <Card sx={{ maxWidth: 900, width: "100%", mx: 4, boxShadow: 4, borderRadius: 3 }}>
+      <Card sx={{ width: "100%", boxShadow: 4, borderRadius: 3, height: "100%" }}>
         <CardContent sx={{ textAlign: "center", py: 6 }}>
           <Typography variant="h6" color="error">
             No valid price data available
@@ -80,12 +84,12 @@ function PriceChartDisplay({ data }: { data: PriceHistory }) {
   const lineColor = isPriceUp ? "#16a34a" : "#dc2626";
 
   return (
-    <Card sx={{ maxWidth: 900, width: "100%", mx: 4, boxShadow: 6, borderRadius: 3 }}>
+    <Card sx={{ width: "100%", boxShadow: 6, borderRadius: 3 }}>
       <CardContent sx={{ p: 4 }}>
         {/* Ticker Label */}
         <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
           <Chip
-            label={data.symbol}
+            label={priceHistory.symbol}
             sx={{
               backgroundColor: "#4caf50",
               color: "white",
@@ -104,7 +108,7 @@ function PriceChartDisplay({ data }: { data: PriceHistory }) {
               Price History
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {data.range} • {data.interval}
+              {priceHistory.range} • {priceHistory.interval}
             </Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "baseline", gap: 2 }}>

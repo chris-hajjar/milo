@@ -1,12 +1,9 @@
 "use client";
+
+import React, { useState } from "react";
 import { useRenderToolCall } from "@copilotkit/react-core";
 import { Card, CardContent, Typography, Box, Chip } from "@mui/material";
 import { LineChart } from "@mui/x-charts/LineChart";
-
-interface CandleData {
-  date: number;
-  close: number | null;
-}
 
 interface BollingerBand {
   date: number;
@@ -20,50 +17,51 @@ interface BollingerBandsData {
   symbol: string;
   period: string;
   interval: string;
-  prices: CandleData[];
   bands: BollingerBand[];
 }
 
-export default function BollingerBandsChart() {
+export default function DashboardBollingerBandsChart() {
+  const [bollingerData, setBollingerData] = useState<BollingerBandsData | null>(null);
+
+  // Listen for tool calls and capture data
   useRenderToolCall({
     name: "get_technical_indicators",
     render: ({ args, result, status }) => {
-      if (status !== "complete" || !result) {
-        return (
-          <Card sx={{ maxWidth: 900, width: "100%", mx: 4, boxShadow: 4, borderRadius: 3 }}>
-            <CardContent sx={{ textAlign: "center", py: 6 }}>
-              <Typography variant="h5" fontWeight="bold">
-                {status === "executing" ? "📊 Loading Bollinger Bands..." : "Ask about Bollinger Bands!"}
-              </Typography>
-            </CardContent>
-          </Card>
-        );
+      if (status === "complete" && result) {
+        // Check if result has bollinger bands data
+        if (!result.bollinger_data || !Array.isArray(result.bollinger_data)) {
+          return null;
+        }
+
+        const data: BollingerBandsData = {
+          symbol: result.symbol || args.symbol || "",
+          period: result.period || args.period || "1mo",
+          interval: result.interval || args.interval || "1d",
+          bands: result.bollinger_data || [],
+        };
+        setBollingerData(data);
       }
-
-      // Check if result has bollinger bands data
-      if (!result.bollinger_data || !Array.isArray(result.bollinger_data)) {
-        return null; // Don't render if no bollinger data
-      }
-
-      const bollingerData: BollingerBandsData = {
-        symbol: result.symbol || args.symbol || "",
-        period: result.period || args.period || "1mo",
-        interval: result.interval || args.interval || "1d",
-        prices: result.prices || [],
-        bands: result.bollinger_data || [],
-      };
-
-      return <BollingerBandsDisplay data={bollingerData} />;
+      // Return null so nothing renders in the chat
+      return null;
     },
   });
 
-  return null; // Chart only appears when tool renders
-}
-
-function BollingerBandsDisplay({ data }: { data: BollingerBandsData }) {
-  if (data.bands.length === 0) {
+  // Always render the card in the dashboard
+  if (!bollingerData) {
     return (
-      <Card sx={{ maxWidth: 900, width: "100%", mx: 4, boxShadow: 4, borderRadius: 3 }}>
+      <Card sx={{ width: "100%", boxShadow: 4, borderRadius: 3 }}>
+        <CardContent sx={{ textAlign: "center", py: 6 }}>
+          <Typography variant="h5" fontWeight="bold" color="text.secondary">
+            Ask about Bollinger Bands!
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (bollingerData.bands.length === 0) {
+    return (
+      <Card sx={{ width: "100%", boxShadow: 4, borderRadius: 3 }}>
         <CardContent sx={{ textAlign: "center", py: 6 }}>
           <Typography variant="h6" color="error">
             No valid Bollinger Bands data available
@@ -74,11 +72,11 @@ function BollingerBandsDisplay({ data }: { data: BollingerBandsData }) {
   }
 
   // Convert timestamps to Date objects
-  const dates = data.bands.map((b) => new Date(b.date * 1000));
-  const upperBand = data.bands.map((b) => b.upper);
-  const middleBand = data.bands.map((b) => b.middle);
-  const lowerBand = data.bands.map((b) => b.lower);
-  const closePrices = data.bands.map((b) => b.close);
+  const dates = bollingerData.bands.map((b) => new Date(b.date * 1000));
+  const upperBand = bollingerData.bands.map((b) => b.upper);
+  const middleBand = bollingerData.bands.map((b) => b.middle);
+  const lowerBand = bollingerData.bands.map((b) => b.lower);
+  const closePrices = bollingerData.bands.map((b) => b.close);
 
   // Calculate min/max for proper chart scaling with padding
   const allValues = [...upperBand, ...middleBand, ...lowerBand, ...closePrices];
@@ -113,12 +111,12 @@ function BollingerBandsDisplay({ data }: { data: BollingerBandsData }) {
   const isPriceUp = priceChange >= 0;
 
   return (
-    <Card sx={{ maxWidth: 900, width: "100%", mx: 4, boxShadow: 6, borderRadius: 3 }}>
+    <Card sx={{ width: "100%", boxShadow: 6, borderRadius: 3 }}>
       <CardContent sx={{ p: 4 }}>
         {/* Ticker Label */}
         <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
           <Chip
-            label={data.symbol}
+            label={bollingerData.symbol}
             sx={{
               backgroundColor: "#9c27b0",
               color: "white",
@@ -137,7 +135,7 @@ function BollingerBandsDisplay({ data }: { data: BollingerBandsData }) {
               Bollinger Bands
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {data.period} • {data.interval}
+              {bollingerData.period} • {bollingerData.interval}
             </Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "baseline", gap: 2, mb: 1 }}>

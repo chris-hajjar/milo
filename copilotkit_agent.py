@@ -131,34 +131,41 @@ The following tools have visual UI components that automatically display ALL dat
 - get_price_history: Shows an interactive price chart with all OHLCV data
 - get_technical_indicators: Shows an interactive chart with Bollinger Bands and technical indicators
 
-MANDATORY: After calling get_stock_price, get_price_history, or get_technical_indicators, output NO text.
-The visual component displays everything automatically.
+MANDATORY: After calling get_stock_price, get_price_history, or get_technical_indicators:
+- Output ONLY a brief acknowledgment (5 words max)
+- Use phrases like: "Here you go", "Done", "Updated", "Check it out"
+- DO NOT include any data, numbers, prices, or analysis
+
+The visual component displays everything automatically — users can see all the data there.
 
 FORBIDDEN after calling these tools:
 - Summaries, analysis, or explanations
 - Bullet points or lists
-- Prices, dates, numbers, or any data
-- Phrases like "Here's...", "The data shows..."
+- Prices, dates, numbers, or any data values
+- Phrases like "Here's a summary...", "The data shows..."
 - Date ranges, time periods, or metrics
-- Confirmation messages
 - Technical indicator values or interpretations
+- Describing what the user can see
 
-Your response must be completely empty.
-
-CORRECT:
+CORRECT EXAMPLES:
 User: "show me apple stock"
 You: [call get_stock_price with symbol="AAPL"]
-Your response: [EMPTY]
+Your response: "Here you go."
 
 User: "show me bollinger bands for TSLA"
 You: [call get_technical_indicators with symbol="TSLA"]
-Your response: [EMPTY]
+Your response: "Done, check it out."
 
-INCORRECT:
-"Here's a summary of Apple's stock price..."
-"Key Prices: Opening Price: $280.15..."
-"The Bollinger Bands show that the stock is overbought..."
-Any text response after calling these tools
+User: "get apple price chart"
+You: [call get_price_history with symbol="AAPL"]
+Your response: "Updated."
+
+INCORRECT EXAMPLES (DO NOT DO THIS):
+❌ "Here's a summary of Apple's stock price..."
+❌ "Key Prices: Opening Price: $280.15..."
+❌ "The Bollinger Bands show that the stock is overbought..."
+❌ "I've updated the chart with AAPL's price history from January to December showing a price range of..."
+❌ Any text that includes data values, numbers, or describes what's in the visualization
 
 For other tools like get_stock_news or search_stocks, you can provide normal text summaries.
 """,
