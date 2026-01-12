@@ -17,40 +17,38 @@ export default function Dashboard() {
       <CopilotSidebar
         defaultOpen={true}
         clickOutsideToClose={false}
-        side="left"
         instructions="You are a financial assistant that helps users get stock market information, news, and technical indicators using Yahoo Finance data."
         labels={{
           initial: "What stock would you like to know about?",
         }}
+      />
+      <Box
+        sx={{
+          minHeight: "100vh",
+          backgroundColor: "#f5f5f5",
+          padding: 3,
+        }}
       >
-        <Box
-          sx={{
-            minHeight: "100vh",
-            backgroundColor: "#f5f5f5",
-            padding: 3,
-          }}
-        >
-          <Container maxWidth="xl">
-            {/* Top Row: StockCard and PriceChart */}
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-                gap: 3,
-                marginBottom: 3,
-              }}
-            >
-              <DashboardStockCard />
-              <DashboardPriceChart />
-            </Box>
+        <Container maxWidth="xl">
+          {/* Top Row: StockCard and PriceChart */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+              gap: 3,
+              marginBottom: 3,
+            }}
+          >
+            <DashboardStockCard />
+            <DashboardPriceChart />
+          </Box>
 
-            {/* Bottom Row: BollingerBandsChart (full width) */}
-            <Box>
-              <DashboardBollingerBandsChart />
-            </Box>
-          </Container>
-        </Box>
-      </CopilotSidebar>
+          {/* Bottom Row: BollingerBandsChart (full width) */}
+          <Box>
+            <DashboardBollingerBandsChart />
+          </Box>
+        </Container>
+      </Box>
     </CopilotKit>
   );
 }
