@@ -5,3 +5,4 @@ mcp
 httpx
 fastmcp
 copilotkit
+numpy

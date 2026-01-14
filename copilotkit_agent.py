@@ -6,7 +6,9 @@ Run: uvicorn copilotkit_agent:app --host 127.0.0.1 --port 8000
 import os
 import math
 import httpx
+import numpy as np
 from pathlib import Path
+from datetime import datetime
 from dotenv import load_dotenv
 from pydantic_ai import Agent as PydanticAgent
 from pydantic_ai.ui.ag_ui.app import AGUIApp
@@ -344,6 +346,273 @@ async def get_technical_indicators(
         "bollinger": bollinger(closes, bollinger_period, bollinger_std),
         "bollinger_data": bollinger_data,
         "prices": prices,
+    }
+
+@pydantic_agent.tool_plain
+async def analyze_portfolio_risk(
+    holdings: list[dict],
+    limits: dict = None
+) -> dict:
+    """
+    Comprehensive portfolio risk analysis with metrics and alerts.
+
+    Args:
+        holdings: List of portfolio positions [{"ticker": "AAPL", "quantity": 100}, ...]
+        limits: Optional risk limits {"volatility": 20, "var": 5000, "concentration": 30}
+
+    Returns:
+        Complete risk analysis with portfolio value, volatility, VaR, positions, and alerts
+    """
+    if not holdings:
+        return {"error": "No holdings provided"}
+
+    if limits is None:
+        limits = {}
+
+    # 1. Fetch current prices and calculate volatility for each position
+    positions = []
+    portfolio_value = 0
+
+    for holding in holdings:
+        ticker = holding["ticker"].upper().strip()
+        quantity = holding["quantity"]
+
+        if quantity <= 0:
+            continue
+
+        try:
+            # Get current price
+            stock_data = await fetch(
+                f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}",
+                {"interval": "1d", "range": "1d"}
+            )
+
+            chart = stock_data.get("chart", {})
+            if "result" not in chart or not chart["result"]:
+                continue
+
+            result = chart["result"][0]
+            meta = result["meta"]
+            price = safe_float(meta.get("regularMarketPrice"))
+
+            if not price:
+                continue
+
+            # Get 30-day history for volatility
+            hist_data = await fetch(
+                f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}",
+                {"range": "1mo", "interval": "1d"}
+            )
+
+            hist_chart = hist_data.get("chart", {})
+            if "result" in hist_chart and hist_chart["result"]:
+                hist_result = hist_chart["result"][0]
+                hist_quote = hist_result["indicators"]["quote"][0]
+                closes = [safe_float(c) for c in hist_quote["close"] if c is not None]
+
+                # Calculate daily returns and volatility
+                if len(closes) > 1:
+                    returns = []
+                    for i in range(1, len(closes)):
+                        if closes[i-1] and closes[i-1] != 0:
+                            ret = (closes[i] - closes[i-1]) / closes[i-1]
+                            returns.append(ret)
+
+                    if returns:
+                        daily_vol = float(np.std(returns))
+                        annualized_vol = daily_vol * np.sqrt(252) * 100
+                    else:
+                        annualized_vol = 0.0
+                else:
+                    annualized_vol = 0.0
+            else:
+                annualized_vol = 0.0
+
+            position_value = price * quantity
+            portfolio_value += position_value
+
+            positions.append({
+                "ticker": ticker,
+                "quantity": quantity,
+                "price": round(price, 2),
+                "value": round(position_value, 2),
+                "volatility": round(annualized_vol, 2),
+            })
+
+        except Exception as e:
+            print(f"Error fetching {ticker}: {e}")
+            continue
+
+    if portfolio_value == 0 or not positions:
+        return {"error": "Could not fetch data for any holdings"}
+
+    # 2. Calculate percentages after we know portfolio value
+    for pos in positions:
+        pos["percentage"] = round((pos["value"] / portfolio_value) * 100, 2)
+
+    # 3. Calculate portfolio-level metrics
+    weights = [p["percentage"] / 100 for p in positions]
+    volatilities = [p["volatility"] / 100 for p in positions]
+
+    # Weighted average volatility (simplified portfolio volatility)
+    portfolio_volatility = sum(w * v for w, v in zip(weights, volatilities)) * 100
+
+    # Value at Risk (95% confidence, 1-day)
+    z_score_95 = 1.645
+    daily_vol = portfolio_volatility / 100 / np.sqrt(252)
+    var_95 = portfolio_value * daily_vol * z_score_95
+
+    max_concentration = max(p["percentage"] for p in positions)
+
+    # 4. Check alerts if limits provided
+    alerts = []
+
+    def check_limit(metric_name, current_value, limit_key, unit):
+        if limit_key not in limits or limits[limit_key] is None:
+            return
+
+        limit_value = limits[limit_key]
+        percentage = (current_value / limit_value) * 100
+
+        if percentage >= 100:
+            alerts.append({
+                "severity": "red",
+                "metric": metric_name,
+                "current": round(current_value, 2),
+                "limit": limit_value,
+                "percentage": round(percentage, 1),
+                "unit": unit,
+                "message": f"{metric_name} {current_value:.1f}{unit} exceeds limit of {limit_value:.1f}{unit}"
+            })
+        elif percentage >= 80:
+            alerts.append({
+                "severity": "yellow",
+                "metric": metric_name,
+                "current": round(current_value, 2),
+                "limit": limit_value,
+                "percentage": round(percentage, 1),
+                "unit": unit,
+                "message": f"{metric_name} {current_value:.1f}{unit} approaching limit ({percentage:.0f}%)"
+            })
+
+    check_limit("Portfolio Volatility", portfolio_volatility, "volatility", "%")
+    check_limit("Value at Risk", var_95, "var", "$")
+    check_limit("Max Concentration", max_concentration, "concentration", "%")
+
+    # Sort positions by value (largest first)
+    positions.sort(key=lambda p: p["value"], reverse=True)
+
+    return {
+        "portfolio_value": round(portfolio_value, 2),
+        "num_holdings": len(positions),
+        "portfolio_volatility": round(portfolio_volatility, 2),
+        "var_95": round(var_95, 2),
+        "max_concentration": round(max_concentration, 2),
+        "positions": positions,
+        "alerts": alerts,
+        "timestamp": datetime.now().isoformat(),
+    }
+
+@pydantic_agent.tool_plain
+async def compare_portfolio_scenarios(
+    scenario_a: list[dict],
+    scenario_b: list[dict],
+    scenario_a_name: str = "Current",
+    scenario_b_name: str = "Proposed"
+) -> dict:
+    """
+    Compare risk metrics between two portfolio scenarios for what-if analysis.
+
+    Args:
+        scenario_a: First portfolio [{"ticker": "AAPL", "quantity": 100}, ...]
+        scenario_b: Second portfolio [{"ticker": "AAPL", "quantity": 150}, ...]
+        scenario_a_name: Name for first scenario (default: "Current")
+        scenario_b_name: Name for second scenario (default: "Proposed")
+
+    Returns:
+        Side-by-side comparison with risk metrics and changes
+    """
+    result_a = await analyze_portfolio_risk(scenario_a)
+    result_b = await analyze_portfolio_risk(scenario_b)
+
+    return {
+        "scenario_a": {
+            "name": scenario_a_name,
+            **result_a
+        },
+        "scenario_b": {
+            "name": scenario_b_name,
+            **result_b
+        },
+        "comparison": {
+            "value_change": round(result_b.get("portfolio_value", 0) - result_a.get("portfolio_value", 0), 2),
+            "volatility_change": round(result_b.get("portfolio_volatility", 0) - result_a.get("portfolio_volatility", 0), 2),
+            "var_change": round(result_b.get("var_95", 0) - result_a.get("var_95", 0), 2),
+        }
+    }
+
+@pydantic_agent.tool_plain
+async def calculate_optimal_position_size(
+    ticker: str,
+    current_portfolio: list[dict],
+    max_concentration_pct: float = 20.0
+) -> dict:
+    """
+    Calculate how many shares to buy without exceeding concentration limits.
+
+    Args:
+        ticker: Stock symbol to analyze
+        current_portfolio: Current holdings [{"ticker": "AAPL", "quantity": 100}, ...]
+        max_concentration_pct: Maximum position concentration (default: 20%)
+
+    Returns:
+        Recommended shares and investment amount to stay within limits
+    """
+    ticker = ticker.upper().strip()
+
+    # Get current portfolio value
+    result = await analyze_portfolio_risk(current_portfolio)
+    if "error" in result:
+        return result
+
+    current_portfolio_value = result["portfolio_value"]
+
+    # Get target stock price
+    try:
+        stock_data = await fetch(
+            f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}",
+            {"interval": "1d", "range": "1d"}
+        )
+
+        chart = stock_data.get("chart", {})
+        if "result" not in chart or not chart["result"]:
+            return {"error": f"Could not fetch price for {ticker}"}
+
+        result_data = chart["result"][0]
+        meta = result_data["meta"]
+        price = safe_float(meta.get("regularMarketPrice"))
+
+        if not price or price == 0:
+            return {"error": f"Invalid price for {ticker}"}
+
+    except Exception as e:
+        return {"error": f"Error fetching {ticker}: {str(e)}"}
+
+    # Calculate max position value based on concentration limit
+    max_position_value = current_portfolio_value * (max_concentration_pct / 100)
+
+    # Calculate shares
+    max_shares = int(max_position_value / price)
+
+    return {
+        "ticker": ticker,
+        "current_price": round(price, 2),
+        "current_portfolio_value": round(current_portfolio_value, 2),
+        "max_concentration_limit": max_concentration_pct,
+        "max_position_value": round(max_position_value, 2),
+        "max_shares": max_shares,
+        "recommended_investment": round(max_shares * price, 2),
+        "resulting_concentration": round((max_shares * price / current_portfolio_value) * 100, 2),
     }
 
 # Create AG-UI app

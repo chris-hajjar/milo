@@ -189,16 +189,24 @@ The CopilotKit web UI implements a **visual-only** pattern for stock data tools:
 
 ## Available Tools
 
-The agent has access to these Yahoo Finance tools:
+The agent has access to these tools:
 
-### Visual Tools (No Text Output)
+### Stock Data Tools
+
+**Visual Tools (No Text Output)**
 - `get_stock_price` - Current price and basic info → **StockCard**
 - `get_price_history` - Historical OHLCV data → **PriceChart**
+- `get_technical_indicators` - RSI, SMA, MACD, Bollinger Bands → **BollingerBandsChart**
 
-### Text Tools (Normal Output)
+**Text Tools (Normal Output)**
 - `get_stock_news` - Recent news articles
 - `search_stocks` - Search by company name or ticker
-- `get_technical_indicators` - RSI, SMA, MACD, Bollinger Bands
+
+### Portfolio Risk Tools
+
+- `analyze_portfolio_risk` - Comprehensive portfolio analysis with volatility, VaR, concentration metrics, and risk alerts
+- `compare_portfolio_scenarios` - Side-by-side comparison of two portfolio scenarios for what-if analysis
+- `calculate_optimal_position_size` - Calculate how many shares to buy without exceeding concentration limits
 
 ---
 
@@ -216,6 +224,30 @@ The agent has access to these Yahoo Finance tools:
 
 ---
 
+## Available Routes
+
+The application has multiple routes with different functionality:
+
+### `/` - Chat Interface
+Full-screen chat with inline visual components for stock analysis
+- "What's the price of AAPL?"
+- "Show me the 6 month chart for Tesla"
+- "Get me news about NVDA"
+
+### `/dashboard` - Stock Dashboard
+Persistent dashboard with sidebar chat showing stock cards, price charts, and Bollinger Bands
+- "Show me Apple stock"
+- "Get the 1 year chart for Microsoft"
+- "Show Bollinger Bands for TSLA"
+
+### `/risk` - Portfolio Risk Monitor
+Portfolio risk analysis dashboard with comprehensive risk metrics and alerts
+- "Analyze my portfolio: 100 AAPL, 50 MSFT, 25 GOOGL with limits: 20% volatility, $5000 VaR, 30% concentration"
+- "What if I added 50 more TSLA to my current portfolio?"
+- "How much NVDA can I buy without exceeding 20% concentration?"
+
+---
+
 ## Project Structure
 
 ```
@@ -226,11 +258,25 @@ The agent has access to these Yahoo Finance tools:
 ├── server.py               # MCP server (used by agent.py and web.py only)
 ├── app/                    # Next.js app (CopilotKit web UI)
 │   ├── page.tsx           # Full-screen CopilotChat interface
+│   ├── dashboard/         # Stock dashboard route
+│   │   └── page.tsx
+│   ├── risk/              # Portfolio risk monitor route
+│   │   └── page.tsx
 │   └── api/copilotkit/    # AG-UI HttpAgent proxy
 │       └── route.ts
 ├── components/             # React visual components
 │   ├── StockCard.tsx      # Visual stock card (Material UI)
-│   └── PriceChart.tsx     # Visual price chart (MUI LineChart)
+│   ├── PriceChart.tsx     # Visual price chart (MUI LineChart)
+│   ├── dashboard/         # Dashboard persistent components
+│   │   ├── DashboardStockCard.tsx
+│   │   ├── DashboardPriceChart.tsx
+│   │   └── DashboardBollingerBandsChart.tsx
+│   └── risk/              # Risk analysis components
+│       ├── DashboardPortfolioSummary.tsx
+│       ├── DashboardRiskAlerts.tsx
+│       ├── DashboardPositionTable.tsx
+│       ├── DashboardScenarioComparison.tsx
+│       └── DashboardPositionSizer.tsx
 ├── requirements.txt        # Python dependencies
 ├── package.json           # Node.js dependencies
 └── Haiku/                 # AG-UI reference example
@@ -240,7 +286,7 @@ The agent has access to these Yahoo Finance tools:
 
 ## Tech Stack
 
-- **Backend:** Pydantic AI, FastAPI, httpx, OpenAI (GPT-4o)
+- **Backend:** Pydantic AI, FastAPI, httpx, NumPy, OpenAI (GPT-4o)
 - **Frontend:** Next.js 15, React 19, CopilotKit, AG-UI Protocol
 - **UI Components:** Material UI (@mui/material, @mui/x-charts)
 - **Data:** Yahoo Finance Public API (no API key required)
