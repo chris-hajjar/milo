@@ -348,26 +348,83 @@ async def get_technical_indicators(
         "prices": prices,
     }
 
+def parse_positions(positions_str: str) -> list[dict]:
+    """
+    Parse a natural language position string into structured holdings.
+
+    Formats supported:
+    - "100 AAPL, 50 MSFT, 25 GOOGL"
+    - "100 shares of AAPL, 50 shares of MSFT"
+    - "AAPL 100, MSFT 50, GOOGL 25"
+    """
+    import re
+
+    holdings = []
+
+    # Split by comma or 'and'
+    parts = re.split(r',|\s+and\s+', positions_str)
+
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+
+        # Try to extract number and ticker
+        # Pattern 1: "100 AAPL" or "100 shares of AAPL"
+        match = re.search(r'(\d+)\s+(?:shares?\s+(?:of\s+)?)?([A-Z]{1,5})', part, re.IGNORECASE)
+        if match:
+            quantity = int(match.group(1))
+            ticker = match.group(2).upper()
+            holdings.append({"ticker": ticker, "quantity": quantity})
+            continue
+
+        # Pattern 2: "AAPL 100" or "AAPL: 100"
+        match = re.search(r'([A-Z]{1,5})[:\s]+(\d+)', part, re.IGNORECASE)
+        if match:
+            ticker = match.group(1).upper()
+            quantity = int(match.group(2))
+            holdings.append({"ticker": ticker, "quantity": quantity})
+            continue
+
+    return holdings
+
 @pydantic_agent.tool_plain
 async def analyze_portfolio_risk(
-    holdings: list[dict],
-    limits: dict = None
+    positions: str,
+    volatility_limit: float = None,
+    var_limit: float = None,
+    concentration_limit: float = None
 ) -> dict:
     """
-    Comprehensive portfolio risk analysis with metrics and alerts.
+    Analyze a portfolio's risk metrics including volatility, Value at Risk, and concentration.
 
     Args:
-        holdings: List of portfolio positions [{"ticker": "AAPL", "quantity": 100}, ...]
-        limits: Optional risk limits {"volatility": 20, "var": 5000, "concentration": 30}
+        positions: Portfolio holdings as a string (e.g., "100 AAPL, 50 MSFT, 25 GOOGL")
+        volatility_limit: Optional max portfolio volatility in % (e.g., 20 means 20%)
+        var_limit: Optional max Value at Risk in dollars (e.g., 5000 means $5,000)
+        concentration_limit: Optional max single position % (e.g., 30 means 30%)
 
     Returns:
         Complete risk analysis with portfolio value, volatility, VaR, positions, and alerts
-    """
-    if not holdings:
-        return {"error": "No holdings provided"}
 
-    if limits is None:
-        limits = {}
+    Examples:
+        - analyze_portfolio_risk("100 AAPL, 50 MSFT, 25 GOOGL")
+        - analyze_portfolio_risk("100 AAPL, 50 MSFT", volatility_limit=20, var_limit=5000, concentration_limit=30)
+    """
+    # Parse positions from natural language
+    holdings = parse_positions(positions)
+
+    if not holdings:
+        return {"error": "Could not parse any positions from input"}
+
+    # Build limits dict
+    limits = {}
+    if volatility_limit is not None:
+        limits["volatility"] = volatility_limit
+    if var_limit is not None:
+        limits["var"] = var_limit
+    if concentration_limit is not None:
+        limits["concentration"] = concentration_limit
 
     # 1. Fetch current prices and calculate volatility for each position
     positions = []
@@ -515,33 +572,37 @@ async def analyze_portfolio_risk(
 
 @pydantic_agent.tool_plain
 async def compare_portfolio_scenarios(
-    scenario_a: list[dict],
-    scenario_b: list[dict],
-    scenario_a_name: str = "Current",
-    scenario_b_name: str = "Proposed"
+    current_positions: str,
+    proposed_positions: str,
+    current_name: str = "Current",
+    proposed_name: str = "Proposed"
 ) -> dict:
     """
     Compare risk metrics between two portfolio scenarios for what-if analysis.
 
     Args:
-        scenario_a: First portfolio [{"ticker": "AAPL", "quantity": 100}, ...]
-        scenario_b: Second portfolio [{"ticker": "AAPL", "quantity": 150}, ...]
-        scenario_a_name: Name for first scenario (default: "Current")
-        scenario_b_name: Name for second scenario (default: "Proposed")
+        current_positions: Current portfolio holdings (e.g., "100 AAPL, 50 MSFT")
+        proposed_positions: Proposed portfolio holdings (e.g., "100 AAPL, 50 MSFT, 50 TSLA")
+        current_name: Name for current scenario (default: "Current")
+        proposed_name: Name for proposed scenario (default: "Proposed")
 
     Returns:
         Side-by-side comparison with risk metrics and changes
+
+    Examples:
+        - compare_portfolio_scenarios("100 AAPL, 50 MSFT", "100 AAPL, 50 MSFT, 50 TSLA")
+        - compare_portfolio_scenarios("200 AAPL", "100 AAPL, 100 GOOGL", current_name="Tech Heavy", proposed_name="Diversified")
     """
-    result_a = await analyze_portfolio_risk(scenario_a)
-    result_b = await analyze_portfolio_risk(scenario_b)
+    result_a = await analyze_portfolio_risk(current_positions)
+    result_b = await analyze_portfolio_risk(proposed_positions)
 
     return {
         "scenario_a": {
-            "name": scenario_a_name,
+            "name": current_name,
             **result_a
         },
         "scenario_b": {
-            "name": scenario_b_name,
+            "name": proposed_name,
             **result_b
         },
         "comparison": {
@@ -554,24 +615,28 @@ async def compare_portfolio_scenarios(
 @pydantic_agent.tool_plain
 async def calculate_optimal_position_size(
     ticker: str,
-    current_portfolio: list[dict],
+    current_positions: str,
     max_concentration_pct: float = 20.0
 ) -> dict:
     """
     Calculate how many shares to buy without exceeding concentration limits.
 
     Args:
-        ticker: Stock symbol to analyze
-        current_portfolio: Current holdings [{"ticker": "AAPL", "quantity": 100}, ...]
-        max_concentration_pct: Maximum position concentration (default: 20%)
+        ticker: Stock symbol to analyze (e.g., "NVDA")
+        current_positions: Current portfolio holdings (e.g., "100 AAPL, 50 MSFT")
+        max_concentration_pct: Maximum position concentration in % (default: 20%)
 
     Returns:
         Recommended shares and investment amount to stay within limits
+
+    Examples:
+        - calculate_optimal_position_size("NVDA", "100 AAPL, 50 MSFT")
+        - calculate_optimal_position_size("TSLA", "200 MSFT, 100 GOOGL", max_concentration_pct=25)
     """
     ticker = ticker.upper().strip()
 
     # Get current portfolio value
-    result = await analyze_portfolio_risk(current_portfolio)
+    result = await analyze_portfolio_risk(current_positions)
     if "error" in result:
         return result
 
