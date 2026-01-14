@@ -242,9 +242,9 @@ Persistent dashboard with sidebar chat showing stock cards, price charts, and Bo
 
 ### `/risk` - Portfolio Risk Monitor
 Portfolio risk analysis dashboard with comprehensive risk metrics and alerts
-- "Analyze my portfolio: 100 AAPL, 50 MSFT, 25 GOOGL with limits: 20% volatility, $5000 VaR, 30% concentration"
-- "What if I added 50 more TSLA to my current portfolio?"
-- "How much NVDA can I buy without exceeding 20% concentration?"
+- "Analyze 100 AAPL, 50 MSFT, 25 GOOGL"
+- "Compare 100 AAPL and 50 MSFT with 100 AAPL, 50 MSFT, and 50 TSLA"
+- "How much NVDA can I buy for my portfolio of 100 AAPL and 50 MSFT with 20% limit?"
 
 ---
 
