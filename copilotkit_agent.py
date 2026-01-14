@@ -427,7 +427,7 @@ async def analyze_portfolio_risk(
         limits["concentration"] = concentration_limit
 
     # 1. Fetch current prices and calculate volatility for each position
-    positions = []
+    position_list = []
     portfolio_value = 0
 
     for holding in holdings:
@@ -488,7 +488,7 @@ async def analyze_portfolio_risk(
             position_value = price * quantity
             portfolio_value += position_value
 
-            positions.append({
+            position_list.append({
                 "ticker": ticker,
                 "quantity": quantity,
                 "price": round(price, 2),
@@ -500,16 +500,16 @@ async def analyze_portfolio_risk(
             print(f"Error fetching {ticker}: {e}")
             continue
 
-    if portfolio_value == 0 or not positions:
+    if portfolio_value == 0 or not position_list:
         return {"error": "Could not fetch data for any holdings"}
 
     # 2. Calculate percentages after we know portfolio value
-    for pos in positions:
+    for pos in position_list:
         pos["percentage"] = round((pos["value"] / portfolio_value) * 100, 2)
 
     # 3. Calculate portfolio-level metrics
-    weights = [p["percentage"] / 100 for p in positions]
-    volatilities = [p["volatility"] / 100 for p in positions]
+    weights = [p["percentage"] / 100 for p in position_list]
+    volatilities = [p["volatility"] / 100 for p in position_list]
 
     # Weighted average volatility (simplified portfolio volatility)
     portfolio_volatility = sum(w * v for w, v in zip(weights, volatilities)) * 100
@@ -519,7 +519,7 @@ async def analyze_portfolio_risk(
     daily_vol = portfolio_volatility / 100 / np.sqrt(252)
     var_95 = portfolio_value * daily_vol * z_score_95
 
-    max_concentration = max(p["percentage"] for p in positions)
+    max_concentration = max(p["percentage"] for p in position_list)
 
     # 4. Check alerts if limits provided
     alerts = []
@@ -557,15 +557,15 @@ async def analyze_portfolio_risk(
     check_limit("Max Concentration", max_concentration, "concentration", "%")
 
     # Sort positions by value (largest first)
-    positions.sort(key=lambda p: p["value"], reverse=True)
+    position_list.sort(key=lambda p: p["value"], reverse=True)
 
     return {
         "portfolio_value": round(portfolio_value, 2),
-        "num_holdings": len(positions),
+        "num_holdings": len(position_list),
         "portfolio_volatility": round(portfolio_volatility, 2),
         "var_95": round(var_95, 2),
         "max_concentration": round(max_concentration, 2),
-        "positions": positions,
+        "positions": position_list,
         "alerts": alerts,
         "timestamp": datetime.now().isoformat(),
     }
