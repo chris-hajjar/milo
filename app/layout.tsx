@@ -1,10 +1,9 @@
-import type { Metadata } from "next";
-import "./globals.css";
+"use client";
 
-export const metadata: Metadata = {
-  title: "Milo - Stock Assistant",
-  description: "AI-powered stock market assistant",
-};
+import "./globals.css";
+import Navigation from "@/components/Navigation";
+import { CopilotKit } from "@copilotkit/react-core";
+import "@copilotkit/react-ui/styles.css";
 
 export default function RootLayout({
   children,
@@ -14,7 +13,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <CopilotKit runtimeUrl="/api/copilotkit" agent="copilotkit_agent">
+          <Navigation />
+          {children}
+        </CopilotKit>
       </body>
     </html>
   );

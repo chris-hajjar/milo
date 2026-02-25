@@ -1,8 +1,6 @@
 "use client";
 
-import { CopilotKit } from "@copilotkit/react-core";
 import { CopilotSidebar } from "@copilotkit/react-ui";
-import "@copilotkit/react-ui/styles.css";
 import DashboardPortfolioSummary from "@/components/risk/DashboardPortfolioSummary";
 import DashboardRiskAlerts from "@/components/risk/DashboardRiskAlerts";
 import DashboardPositionTable from "@/components/risk/DashboardPositionTable";
@@ -12,13 +10,10 @@ import { Box, Container, Typography } from "@mui/material";
 
 export default function RiskMonitor() {
   return (
-    <CopilotKit
-      runtimeUrl="/api/copilotkit"
-      agent="copilotkit_agent"
-    >
+    <>
       <CopilotSidebar
-        defaultOpen={true}
-        clickOutsideToClose={false}
+        defaultOpen={false}
+        clickOutsideToClose={true}
         instructions="You are a portfolio risk analyst. Help users analyze their stock portfolios, calculate risk metrics like volatility and Value at Risk, compare scenarios, and determine optimal position sizes. Use analyze_portfolio_risk for comprehensive portfolio analysis, compare_portfolio_scenarios for what-if analysis, and calculate_optimal_position_size to help users stay within concentration limits."
         labels={{
           initial: "What portfolio would you like to analyze?\n\nExamples:\n• Analyze my portfolio: 100 AAPL, 50 MSFT, 25 GOOGL\n• Compare current vs proposed with 50 more TSLA\n• How much NVDA can I buy with 20% limit?",
@@ -71,6 +66,6 @@ export default function RiskMonitor() {
           </Box>
         </Container>
       </Box>
-    </CopilotKit>
+    </>
   );
 }

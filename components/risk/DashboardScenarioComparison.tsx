@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRenderToolCall } from "@copilotkit/react-core";
 import { Card, CardContent, Typography, Box, Divider, Grid } from "@mui/material";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
@@ -26,16 +26,24 @@ interface ComparisonData {
 
 export default function DashboardScenarioComparison() {
   const [comparisonData, setComparisonData] = useState<ComparisonData | null>(null);
+  const [pendingResult, setPendingResult] = useState<any>(null);
 
   useRenderToolCall({
     name: "compare_portfolio_scenarios",
     render: ({ result, status }) => {
       if (status === "complete" && result) {
-        setComparisonData(result as ComparisonData);
+        setPendingResult(result);
       }
-      return null;
+      return <></>;
     },
   });
+
+  useEffect(() => {
+    if (pendingResult) {
+      setComparisonData(pendingResult as ComparisonData);
+      setPendingResult(null);
+    }
+  }, [pendingResult]);
 
   if (!comparisonData) {
     return (

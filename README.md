@@ -208,6 +208,15 @@ The agent has access to these tools:
 - `compare_portfolio_scenarios` - Side-by-side comparison of two portfolio scenarios for what-if analysis
 - `calculate_optimal_position_size` - Calculate how many shares to buy without exceeding concentration limits
 
+### Transaction Query Tools
+
+- `query_transactions` - Natural language transaction filtering with support for:
+  - Timeframe: "last 30 days", "this year", "Q1 2026", etc.
+  - Account type: "TFSA", "RRSP", "Non-registered"
+  - Transaction type: "dividend", "deposit", "withdrawal", "purchase", "sale", "fee", "interest"
+  - Ticker: "AAPL", "GOOGL", etc.
+  - Returns summary statistics, time series aggregation, and filtered transaction list
+
 ---
 
 ## Example Queries
@@ -246,6 +255,14 @@ Portfolio risk analysis dashboard with comprehensive risk metrics and alerts
 - "Compare 100 AAPL and 50 MSFT with 100 AAPL, 50 MSFT, and 50 TSLA"
 - "How much NVDA can I buy for my portfolio of 100 AAPL and 50 MSFT with 20% limit?"
 
+### `/transactions` - Transaction Activity
+Natural language transaction query dashboard with filtering and visualization
+- "Show me all dividends in the last 90 days"
+- "RRSP deposits this year"
+- "TFSA purchases in the last 30 days"
+- "All AAPL transactions"
+- "Fees in Q1 2026"
+
 ---
 
 ## Project Structure
@@ -262,21 +279,29 @@ Portfolio risk analysis dashboard with comprehensive risk metrics and alerts
 │   │   └── page.tsx
 │   ├── risk/              # Portfolio risk monitor route
 │   │   └── page.tsx
+│   ├── transactions/      # Transaction query route
+│   │   └── page.tsx
 │   └── api/copilotkit/    # AG-UI HttpAgent proxy
 │       └── route.ts
 ├── components/             # React visual components
+│   ├── Navigation.tsx     # Navigation tab bar for all routes
 │   ├── StockCard.tsx      # Visual stock card (Material UI)
 │   ├── PriceChart.tsx     # Visual price chart (MUI LineChart)
 │   ├── dashboard/         # Dashboard persistent components
 │   │   ├── DashboardStockCard.tsx
 │   │   ├── DashboardPriceChart.tsx
 │   │   └── DashboardBollingerBandsChart.tsx
-│   └── risk/              # Risk analysis components
-│       ├── DashboardPortfolioSummary.tsx
-│       ├── DashboardRiskAlerts.tsx
-│       ├── DashboardPositionTable.tsx
-│       ├── DashboardScenarioComparison.tsx
-│       └── DashboardPositionSizer.tsx
+│   ├── risk/              # Risk analysis components
+│   │   ├── DashboardPortfolioSummary.tsx
+│   │   ├── DashboardRiskAlerts.tsx
+│   │   ├── DashboardPositionTable.tsx
+│   │   ├── DashboardScenarioComparison.tsx
+│   │   └── DashboardPositionSizer.tsx
+│   └── transactions/      # Transaction query components
+│       ├── DashboardTransactionSummary.tsx
+│       ├── DashboardTransactionTable.tsx
+│       ├── DashboardTransactionChart.tsx
+│       └── DashboardTransactionBreakdown.tsx
 ├── requirements.txt        # Python dependencies
 ├── package.json           # Node.js dependencies
 └── Haiku/                 # AG-UI reference example

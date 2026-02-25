@@ -7,8 +7,10 @@ import os
 import math
 import httpx
 import numpy as np
+import random
+import re
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from pydantic_ai import Agent as PydanticAgent
 from pydantic_ai.ui.ag_ui.app import AGUIApp
@@ -388,6 +390,386 @@ def parse_positions(positions_str: str) -> list[dict]:
 
     return holdings
 
+def generate_mock_transactions(seed=42):
+    """
+    Generate mock transaction data for testing (1 year of data).
+    Returns a list of transaction dictionaries with various types.
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+
+    transactions = []
+    transaction_id = 1000
+
+    # Account types and tickers
+    accounts = ["TFSA", "RRSP", "Non-registered"]
+    tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "VFV.TO", "XIC.TO", "QQQ"]
+
+    # USD to CAD exchange rate (fixed for mock data)
+    usd_to_cad = 1.35
+
+    # Helper to determine if ticker is USD or CAD
+    def is_cad_ticker(ticker):
+        return ticker.endswith(".TO")
+
+    # Start date: 1 year ago
+    start_date = datetime.now() - timedelta(days=365)
+
+    # 1. Initial deposits (one per account)
+    for account in accounts:
+        amount = random.randint(5000, 20000)
+        transactions.append({
+            "transaction_id": f"TXN{transaction_id}",
+            "date": (start_date + timedelta(days=random.randint(0, 7))).isoformat(),
+            "account_type": account,
+            "transaction_type": "deposit",
+            "ticker": None,
+            "quantity": None,
+            "price": None,
+            "amount": amount,
+            "description": f"Initial deposit to {account}",
+            "currency": "CAD"
+        })
+        transaction_id += 1
+
+    # 2. Monthly deposits over the year
+    for month_offset in range(1, 12):
+        for account in random.sample(accounts, k=random.randint(1, 2)):
+            amount = random.randint(500, 2500)
+            deposit_date = start_date + timedelta(days=30 * month_offset + random.randint(0, 5))
+            transactions.append({
+                "transaction_id": f"TXN{transaction_id}",
+                "date": deposit_date.isoformat(),
+                "account_type": account,
+                "transaction_type": "deposit",
+                "ticker": None,
+                "quantity": None,
+                "price": None,
+                "amount": amount,
+                "description": f"Monthly contribution to {account}",
+                "currency": "CAD"
+            })
+            transaction_id += 1
+
+    # 3. Stock purchases (20-30 purchases)
+    num_purchases = random.randint(20, 30)
+    for _ in range(num_purchases):
+        account = random.choice(accounts)
+        ticker = random.choice(tickers)
+        quantity = random.randint(1, 50)
+
+        # Mock prices based on ticker
+        if ticker == "AAPL":
+            price_usd = random.uniform(150, 200)
+        elif ticker == "MSFT":
+            price_usd = random.uniform(300, 400)
+        elif ticker == "GOOGL":
+            price_usd = random.uniform(130, 160)
+        elif ticker == "AMZN":
+            price_usd = random.uniform(140, 180)
+        elif ticker == "TSLA":
+            price_usd = random.uniform(200, 300)
+        elif ticker == "VFV.TO":
+            price_usd = random.uniform(100, 120)
+        elif ticker == "XIC.TO":
+            price_usd = random.uniform(30, 35)
+        else:  # QQQ
+            price_usd = random.uniform(350, 450)
+
+        # Convert to CAD if USD ticker
+        if is_cad_ticker(ticker):
+            price = price_usd
+            currency = "CAD"
+        else:
+            price = price_usd * usd_to_cad
+            currency = "CAD"  # All amounts converted to CAD
+
+        amount = -(quantity * price)  # Negative for purchase
+        purchase_date = start_date + timedelta(days=random.randint(10, 350))
+
+        transactions.append({
+            "transaction_id": f"TXN{transaction_id}",
+            "date": purchase_date.isoformat(),
+            "account_type": account,
+            "transaction_type": "purchase",
+            "ticker": ticker,
+            "quantity": quantity,
+            "price": round(price, 2),
+            "amount": round(amount, 2),
+            "description": f"Bought {quantity} shares of {ticker}",
+            "currency": currency
+        })
+        transaction_id += 1
+
+    # 4. Stock sales (5-10 sales)
+    num_sales = random.randint(5, 10)
+    for _ in range(num_sales):
+        account = random.choice(accounts)
+        ticker = random.choice(tickers)
+        quantity = random.randint(1, 30)
+
+        # Mock prices (slightly different from purchases)
+        if ticker == "AAPL":
+            price_usd = random.uniform(160, 210)
+        elif ticker == "MSFT":
+            price_usd = random.uniform(310, 410)
+        elif ticker == "GOOGL":
+            price_usd = random.uniform(135, 165)
+        elif ticker == "AMZN":
+            price_usd = random.uniform(145, 185)
+        elif ticker == "TSLA":
+            price_usd = random.uniform(210, 310)
+        elif ticker == "VFV.TO":
+            price_usd = random.uniform(105, 125)
+        elif ticker == "XIC.TO":
+            price_usd = random.uniform(31, 36)
+        else:  # QQQ
+            price_usd = random.uniform(360, 460)
+
+        # Convert to CAD if USD ticker
+        if is_cad_ticker(ticker):
+            price = price_usd
+            currency = "CAD"
+        else:
+            price = price_usd * usd_to_cad
+            currency = "CAD"
+
+        amount = quantity * price  # Positive for sale
+        sale_date = start_date + timedelta(days=random.randint(30, 360))
+
+        transactions.append({
+            "transaction_id": f"TXN{transaction_id}",
+            "date": sale_date.isoformat(),
+            "account_type": account,
+            "transaction_type": "sale",
+            "ticker": ticker,
+            "quantity": quantity,
+            "price": round(price, 2),
+            "amount": round(amount, 2),
+            "description": f"Sold {quantity} shares of {ticker}",
+            "currency": currency
+        })
+        transaction_id += 1
+
+    # 5. Quarterly dividends for select tickers
+    dividend_tickers = ["AAPL", "MSFT", "VFV.TO", "XIC.TO"]
+    for quarter in range(4):
+        for ticker in dividend_tickers:
+            if random.random() < 0.7:  # 70% chance of dividend
+                account = random.choice(accounts)
+                dividend_per_share = random.uniform(0.5, 2.0)
+                shares_held = random.randint(10, 100)
+
+                # Convert to CAD if USD ticker
+                if is_cad_ticker(ticker):
+                    amount = dividend_per_share * shares_held
+                else:
+                    amount = dividend_per_share * shares_held * usd_to_cad
+
+                div_date = start_date + timedelta(days=90 * quarter + random.randint(0, 30))
+
+                transactions.append({
+                    "transaction_id": f"TXN{transaction_id}",
+                    "date": div_date.isoformat(),
+                    "account_type": account,
+                    "transaction_type": "dividend",
+                    "ticker": ticker,
+                    "quantity": None,
+                    "price": None,
+                    "amount": round(amount, 2),
+                    "description": f"Dividend from {ticker}",
+                    "currency": "CAD"
+                })
+                transaction_id += 1
+
+    # 6. Monthly interest income
+    for month_offset in range(12):
+        for account in random.sample(accounts, k=random.randint(1, 2)):
+            amount = random.uniform(5, 50)
+            interest_date = start_date + timedelta(days=30 * month_offset + random.randint(25, 30))
+
+            transactions.append({
+                "transaction_id": f"TXN{transaction_id}",
+                "date": interest_date.isoformat(),
+                "account_type": account,
+                "transaction_type": "interest",
+                "ticker": None,
+                "quantity": None,
+                "price": None,
+                "amount": round(amount, 2),
+                "description": f"Interest income in {account}",
+                "currency": "CAD"
+            })
+            transaction_id += 1
+
+    # 7. Occasional fees
+    num_fees = random.randint(3, 8)
+    for _ in range(num_fees):
+        account = random.choice(accounts)
+        amount = -random.uniform(5, 25)
+        fee_date = start_date + timedelta(days=random.randint(30, 350))
+
+        transactions.append({
+            "transaction_id": f"TXN{transaction_id}",
+            "date": fee_date.isoformat(),
+            "account_type": account,
+            "transaction_type": "fee",
+            "ticker": None,
+            "quantity": None,
+            "price": None,
+            "amount": round(amount, 2),
+            "description": f"Account maintenance fee",
+            "currency": "CAD"
+        })
+        transaction_id += 1
+
+    # 8. A few withdrawals
+    num_withdrawals = random.randint(2, 5)
+    for _ in range(num_withdrawals):
+        account = random.choice(["Non-registered", "TFSA"])  # Can't withdraw from RRSP easily
+        amount = -random.randint(500, 3000)
+        withdrawal_date = start_date + timedelta(days=random.randint(60, 350))
+
+        transactions.append({
+            "transaction_id": f"TXN{transaction_id}",
+            "date": withdrawal_date.isoformat(),
+            "account_type": account,
+            "transaction_type": "withdrawal",
+            "ticker": None,
+            "quantity": None,
+            "price": None,
+            "amount": amount,
+            "description": f"Withdrawal from {account}",
+            "currency": "CAD"
+        })
+        transaction_id += 1
+
+    # Sort by date
+    transactions.sort(key=lambda t: t["date"])
+
+    return transactions
+
+def parse_timeframe(query: str):
+    """
+    Extract start and end dates from natural language timeframe.
+    Returns (start_date, end_date) as ISO strings or (None, None).
+    """
+    query_lower = query.lower()
+    now = datetime.now()
+
+    # "last X days"
+    match = re.search(r'last\s+(\d+)\s+days?', query_lower)
+    if match:
+        days = int(match.group(1))
+        start = now - timedelta(days=days)
+        return start.isoformat(), now.isoformat()
+
+    # "last X months"
+    match = re.search(r'last\s+(\d+)\s+months?', query_lower)
+    if match:
+        months = int(match.group(1))
+        start = now - timedelta(days=months * 30)
+        return start.isoformat(), now.isoformat()
+
+    # "this year" or "YTD"
+    if 'this year' in query_lower or 'ytd' in query_lower:
+        start = datetime(now.year, 1, 1)
+        return start.isoformat(), now.isoformat()
+
+    # "this month"
+    if 'this month' in query_lower:
+        start = datetime(now.year, now.month, 1)
+        return start.isoformat(), now.isoformat()
+
+    # "last year"
+    if 'last year' in query_lower:
+        start = datetime(now.year - 1, 1, 1)
+        end = datetime(now.year - 1, 12, 31)
+        return start.isoformat(), end.isoformat()
+
+    # "Q1", "Q2", etc. (assume current year if not specified)
+    match = re.search(r'q([1-4])(?:\s+(\d{4}))?', query_lower)
+    if match:
+        quarter = int(match.group(1))
+        year = int(match.group(2)) if match.group(2) else now.year
+
+        quarter_starts = {
+            1: (1, 1),
+            2: (4, 1),
+            3: (7, 1),
+            4: (10, 1)
+        }
+        quarter_ends = {
+            1: (3, 31),
+            2: (6, 30),
+            3: (9, 30),
+            4: (12, 31)
+        }
+
+        start = datetime(year, *quarter_starts[quarter])
+        end = datetime(year, *quarter_ends[quarter])
+        return start.isoformat(), end.isoformat()
+
+    # Default: last 30 days
+    start = now - timedelta(days=30)
+    return start.isoformat(), now.isoformat()
+
+def parse_account_type(query: str):
+    """
+    Extract account type from query.
+    Returns account type string or None.
+    """
+    query_lower = query.lower()
+
+    if 'tfsa' in query_lower:
+        return "TFSA"
+    elif 'rrsp' in query_lower:
+        return "RRSP"
+    elif 'non-registered' in query_lower or 'taxable' in query_lower:
+        return "Non-registered"
+    elif 'resp' in query_lower:
+        return "RESP"
+    elif 'lira' in query_lower:
+        return "LIRA"
+
+    return None
+
+def parse_transaction_types(query: str):
+    """
+    Extract transaction types from query.
+    Returns list of transaction type strings.
+    """
+    query_lower = query.lower()
+    types = []
+
+    if 'dividend' in query_lower:
+        types.append("dividend")
+    if 'deposit' in query_lower or 'contribution' in query_lower:
+        types.append("deposit")
+    if 'withdrawal' in query_lower or 'withdraw' in query_lower:
+        types.append("withdrawal")
+    if 'purchase' in query_lower or 'buy' in query_lower or 'bought' in query_lower:
+        types.append("purchase")
+    if 'sale' in query_lower or 'sell' in query_lower or 'sold' in query_lower:
+        types.append("sale")
+    if 'fee' in query_lower or 'charge' in query_lower:
+        types.append("fee")
+    if 'interest' in query_lower:
+        types.append("interest")
+
+    return types
+
+def parse_ticker(query: str):
+    """
+    Extract ticker symbol from query.
+    Returns ticker string or None.
+    """
+    # Look for uppercase 2-5 letter words, optionally with .TO suffix
+    match = re.search(r'\b([A-Z]{2,5}(?:\.TO)?)\b', query)
+    if match:
+        return match.group(1)
+    return None
+
 @pydantic_agent.tool_plain
 async def analyze_portfolio_risk(
     positions: str,
@@ -678,6 +1060,131 @@ async def calculate_optimal_position_size(
         "max_shares": max_shares,
         "recommended_investment": round(max_shares * price, 2),
         "resulting_concentration": round((max_shares * price / current_portfolio_value) * 100, 2),
+    }
+
+@pydantic_agent.tool_plain
+async def query_transactions(query: str) -> dict:
+    """
+    Query transaction history with natural language filters.
+
+    Supports filtering by:
+    - Timeframe: "last 30 days", "this year", "Q1 2026", etc.
+    - Account type: "TFSA", "RRSP", "Non-registered"
+    - Transaction type: "dividend", "deposit", "withdrawal", "purchase", "sale", "fee", "interest"
+    - Ticker: "AAPL", "GOOGL", etc.
+
+    Returns transaction data with summary statistics and time series aggregation.
+
+    Examples:
+        - "Show me all dividends in the last 90 days"
+        - "RRSP deposits this year"
+        - "TFSA purchases in the last 30 days"
+        - "All AAPL transactions"
+        - "Fees in Q1 2026"
+    """
+    # Generate mock transaction data
+    all_transactions = generate_mock_transactions(seed=42)
+
+    # Parse filters from query
+    start_date, end_date = parse_timeframe(query)
+    account_type = parse_account_type(query)
+    transaction_types = parse_transaction_types(query)
+    ticker = parse_ticker(query)
+
+    # Filter transactions
+    filtered = all_transactions
+
+    # Filter by date range
+    if start_date and end_date:
+        start_dt = datetime.fromisoformat(start_date)
+        end_dt = datetime.fromisoformat(end_date)
+        filtered = [
+            t for t in filtered
+            if start_dt <= datetime.fromisoformat(t["date"]) <= end_dt
+        ]
+
+    # Filter by account type
+    if account_type:
+        filtered = [t for t in filtered if t["account_type"] == account_type]
+
+    # Filter by transaction types
+    if transaction_types:
+        filtered = [t for t in filtered if t["transaction_type"] in transaction_types]
+
+    # Filter by ticker
+    if ticker:
+        filtered = [t for t in filtered if t["ticker"] == ticker]
+
+    # Calculate summary statistics
+    total_amount = sum(t["amount"] for t in filtered)
+    total_count = len(filtered)
+
+    # Breakdown by type
+    by_type = {}
+    for t in filtered:
+        ttype = t["transaction_type"]
+        if ttype not in by_type:
+            by_type[ttype] = {"count": 0, "total": 0.0}
+        by_type[ttype]["count"] += 1
+        by_type[ttype]["total"] += t["amount"]
+
+    # Round totals
+    for ttype in by_type:
+        by_type[ttype]["total"] = round(by_type[ttype]["total"], 2)
+
+    # Breakdown by account
+    by_account = {}
+    for t in filtered:
+        account = t["account_type"]
+        if account not in by_account:
+            by_account[account] = {"count": 0, "total": 0.0}
+        by_account[account]["count"] += 1
+        by_account[account]["total"] += t["amount"]
+
+    # Round totals
+    for account in by_account:
+        by_account[account]["total"] = round(by_account[account]["total"], 2)
+
+    # Generate monthly time series
+    time_series = {}
+    for t in filtered:
+        date_obj = datetime.fromisoformat(t["date"])
+        month_key = date_obj.strftime("%Y-%m")
+
+        if month_key not in time_series:
+            time_series[month_key] = {"amount": 0.0, "count": 0}
+
+        time_series[month_key]["amount"] += t["amount"]
+        time_series[month_key]["count"] += 1
+
+    # Convert to sorted list
+    time_series_list = [
+        {
+            "date": month,
+            "amount": round(data["amount"], 2),
+            "count": data["count"]
+        }
+        for month, data in sorted(time_series.items())
+    ]
+
+    return {
+        "query": query,
+        "filters": {
+            "start_date": start_date,
+            "end_date": end_date,
+            "account_type": account_type,
+            "transaction_types": transaction_types,
+            "ticker": ticker
+        },
+        "summary": {
+            "total_amount": round(total_amount, 2),
+            "total_count": total_count,
+            "by_type": by_type,
+            "by_account": by_account
+        },
+        "time_series": time_series_list,
+        "transactions": filtered,
+        "timestamp": datetime.now().isoformat()
     }
 
 # Create AG-UI app

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRenderToolCall } from "@copilotkit/react-core";
 import { Card, CardContent, Typography, Alert, Box } from "@mui/material";
 import WarningIcon from "@mui/icons-material/Warning";
@@ -19,16 +19,24 @@ interface RiskAlert {
 
 export default function DashboardRiskAlerts() {
   const [alerts, setAlerts] = useState<RiskAlert[]>([]);
+  const [pendingResult, setPendingResult] = useState<any>(null);
 
   useRenderToolCall({
     name: "analyze_portfolio_risk",
     render: ({ result, status }) => {
       if (status === "complete" && result && !result.error && result.alerts) {
-        setAlerts(result.alerts);
+        setPendingResult(result);
       }
-      return null;
+      return <></>;
     },
   });
+
+  useEffect(() => {
+    if (pendingResult?.alerts) {
+      setAlerts(pendingResult.alerts);
+      setPendingResult(null);
+    }
+  }, [pendingResult]);
 
   return (
     <Card sx={{ boxShadow: 6, borderRadius: 3, height: "100%" }}>

@@ -1,8 +1,6 @@
 "use client";
 
-import { CopilotKit } from "@copilotkit/react-core";
 import { CopilotSidebar } from "@copilotkit/react-ui";
-import "@copilotkit/react-ui/styles.css";
 import DashboardStockCard from "@/components/dashboard/DashboardStockCard";
 import DashboardPriceChart from "@/components/dashboard/DashboardPriceChart";
 import DashboardBollingerBandsChart from "@/components/dashboard/DashboardBollingerBandsChart";
@@ -10,13 +8,10 @@ import { Box, Container } from "@mui/material";
 
 export default function Dashboard() {
   return (
-    <CopilotKit
-      runtimeUrl="/api/copilotkit"
-      agent="copilotkit_agent"
-    >
+    <>
       <CopilotSidebar
-        defaultOpen={true}
-        clickOutsideToClose={false}
+        defaultOpen={false}
+        clickOutsideToClose={true}
         instructions="You are a financial assistant that helps users get stock market information, news, and technical indicators using Yahoo Finance data."
         labels={{
           initial: "What stock would you like to know about?",
@@ -49,6 +44,6 @@ export default function Dashboard() {
           </Box>
         </Container>
       </Box>
-    </CopilotKit>
+    </>
   );
 }
